@@ -1,0 +1,132 @@
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(3px);
+}
+.modal-box {
+  background: #fff;
+  border-radius: var(--radius-xl);
+  width: 100%; max-width: 680px;
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: fadeUp 0.25s ease;
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0;
+  background: #fff; z-index: 1;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+.modal-header h2 {
+  font-family: var(--font-display);
+  font-size: 20px; font-weight: 800;
+}
+.modal-close {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--surface); font-size: 14px;
+  color: var(--text-muted); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition);
+}
+.modal-close:hover { background: var(--border); color: var(--text-primary); }
+
+/* Form grid */
+.pform      { padding: 20px 24px; }
+.pform-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.pf         { display: flex; flex-direction: column; gap: 5px; }
+.pf-full    { grid-column: 1 / -1; }
+.pf-check   { align-self: end; padding-bottom: 4px; }
+.pf label   { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+.pf label small { font-weight: 400; color: var(--text-muted); }
+.pf-check label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+}
+.pf-check input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--primary); }
+
+.pf input,
+.pf select,
+.pf textarea {
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body); font-size: 14px;
+  color: var(--text-primary); outline: none;
+  background: #fff;
+  transition: border-color var(--transition);
+}
+.pf input:focus,
+.pf select:focus,
+.pf textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(255,62,108,0.08);
+}
+.pf textarea        { resize: vertical; min-height: 80px; }
+.pf input[type=file]{ padding: 8px; background: var(--bg); font-size: 13px; }
+
+/* Image mode tabs */
+.img-mode-tabs { display: flex; gap: 8px; margin-bottom: 8px; }
+.img-mode-tabs button {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--border);
+  font-family: var(--font-body); font-size: 12px; font-weight: 600;
+  color: var(--text-secondary);
+  transition: all var(--transition);
+}
+.img-mode-tabs button.active {
+  background: var(--primary); color: #fff; border-color: var(--primary);
+}
+
+/* Previews */
+.img-previews { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.img-previews img {
+  width: 72px; height: 80px; object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+/* Error */
+.pform-error {
+  background: #FFF0F3; color: var(--primary);
+  border: 1px solid #FFD6E0;
+  border-radius: var(--radius-md);
+  padding: 10px 14px; font-size: 13px;
+  margin-top: 12px;
+}
+
+/* Footer */
+.modal-footer {
+  display: flex; gap: 10px; justify-content: flex-end;
+  padding: 16px 24px 20px;
+  border-top: 1px solid var(--border);
+  margin-top: 16px;
+}
+.btn-cancel {
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border);
+  font-family: var(--font-body); font-size: 14px; font-weight: 600;
+  color: var(--text-secondary);
+  transition: all var(--transition);
+}
+.btn-cancel:hover { background: var(--surface); }
+
+.btn-primary {
+  background: var(--primary); color: #fff;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body); font-size: 14px; font-weight: 700;
+  transition: all var(--transition);
+}
+.btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+@media (max-width: 600px) {
+  .pform-grid { grid-template-columns: 1fr; }
+  .modal-box  { border-radius: var(--radius-lg); }
+}
