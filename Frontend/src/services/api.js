@@ -86,6 +86,7 @@ getContactMessages:     ()     => request('GET',  '/admin/contact-messages'),
 markMessageRead:        (id)   => request('PUT',  `/admin/contact-messages/${id}/read`),
 replyToMessage:         (id, body) => request('PUT', `/admin/contact-messages/${id}/reply`, body),
 deleteContactMessage:   (id)   => request('DELETE', `/admin/contact-messages/${id}`),
+getMyMessages: (email) => request('GET', `/contact/check?email=${encodeURIComponent(email)}`),
 
   // ── Page View Tracking ────────────────────────────────
   trackView: (pathname) => {

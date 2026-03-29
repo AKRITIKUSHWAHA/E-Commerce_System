@@ -6,7 +6,7 @@ export default function AboutPage() {
     <div className="info-page container">
       <div className="info-hero">
         <h1>🛍️ About Us</h1>
-        <p>India ki trusted fashion & lifestyle destination</p>
+        <p>India's trusted fashion & lifestyle destination</p>
       </div>
 
       <div className="info-content">

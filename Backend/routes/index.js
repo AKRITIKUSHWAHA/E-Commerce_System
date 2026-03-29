@@ -29,6 +29,14 @@ const {
   getReviews, addReview, deleteReview,
 } = require('../controllers/reviewController');
 
+const {
+  // ...existing...
+  getMyMessages,
+} = require('../controllers/adminController');
+
+// Contact routes mein add karo
+router.get('/contact/check', getMyMessages); // public
+
 // ══════════════════════════════════════════
 //  AUTH ROUTES
 // ══════════════════════════════════════════
@@ -99,5 +107,7 @@ router.post('/orders/create-razorpay-order', protect, createRazorpayOrder);
 router.post('/orders/verify-payment',        protect, verifyAndPlaceOrder);
 router.post('/orders',                       protect, placeOrder);
 router.get ('/user/orders',                  protect, getUserOrders);
+
+
 
 module.exports = router;

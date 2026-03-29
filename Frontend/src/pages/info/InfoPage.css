@@ -284,3 +284,308 @@
   background: #FAFAFA;
   animation: fadeDown 0.2s ease;
 }
+
+/* ── ✨ NEW PROFESSIONAL ENHANCEMENTS (BINA PURANA DELETE KIYE) ✨ ── */
+
+/* Smooth animation for page load */
+.info-page {
+  animation: fadeInPage 0.8s ease-out;
+}
+
+@keyframes fadeInPage {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Better Card Hover */
+.info-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.info-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(255, 62, 108, 0.15);
+  border-color: #FF3E6C;
+}
+
+/* Improved Form Wrapping */
+.contact-form-wrap {
+  box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+  border: none;
+}
+
+/* Subtle input backgrounds */
+.cf-field input, .cf-field select, .cf-field textarea {
+  background: #fdfdfd;
+  border: 1.5px solid #ececec;
+}
+
+/* Professional Stat Styling */
+.info-stats {
+  box-shadow: 0 10px 30px rgba(255, 62, 108, 0.2);
+}
+
+.info-stat strong {
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Enhanced Feature Items */
+.info-feature {
+  transition: all 0.3s ease;
+}
+.info-feature:hover {
+  border-left: 4px solid #FF3E6C;
+  background: #fffafa;
+}
+
+/* Policy Item accent */
+.info-policy-item {
+  border-left: 0 solid #FF3E6C;
+  transition: all 0.2s ease;
+}
+.info-policy-item:hover {
+  border-left: 6px solid #FF3E6C;
+  padding-left: 24px;
+}
+
+/* ... (Aapka pura purana code yahan tak rahega) ... */
+
+/* ── ✨ PREMIUM BACKGROUND ENHANCEMENTS (BINA PURANA DELETE KIYE) ✨ ── */
+
+body {
+  /* Soft grey background with fixed attachment */
+  background-color: #fcfcfd;
+  
+  /* Subtle Dot Grid Pattern - Professional Tech Look */
+  background-image: radial-gradient(rgba(255, 62, 108, 0.04) 1.5px, transparent 1.5px);
+  background-size: 30px 30px;
+  background-attachment: fixed;
+  position: relative;
+}
+
+/* Background mein do soft pink glows (Top aur Bottom) */
+body::before, body::after {
+  content: "";
+  position: fixed;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 62, 108, 0.03) 0%, transparent 70%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+body::before {
+  top: -200px;
+  right: -200px;
+}
+
+body::after {
+  bottom: -200px;
+  left: -200px;
+}
+
+/* Info page content area ko thoda glass look dene ke liye */
+.info-page {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  border-radius: 40px;
+  padding-top: 40px;
+  padding-bottom: 100px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.02);
+  margin-top: 20px;
+}
+
+/* Form container ko background se thoda highlight karne ke liye */
+.contact-form-wrap {
+  background: #ffffff !important;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Stats section ko background pe pop karne ke liye transition */
+.info-stats {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── ✨ ULTRA-PROFESSIONAL ENHANCEMENTS ✨ ── */
+
+/* 1. Interactive Mouse-Track Glow (Subtle) */
+.info-page::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
+              rgba(255, 62, 108, 0.03), transparent 40%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* 2. Floating Animation for Hero Icon/Elements */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.info-card__icon, .info-policy-icon {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* 3. Glass-Card Effect for Stats */
+.info-stats {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Stats ke andar ek shining "Sweep" effect */
+.info-stats::after {
+  content: "";
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+  transform: rotate(45deg);
+  animation: shine 6s infinite;
+}
+
+@keyframes shine {
+  0% { margin-left: -100%; }
+  100% { margin-left: 100%; }
+}
+
+/* 4. Professional Typography Spacing */
+.info-hero h1 {
+  letter-spacing: -1.5px; /* Premium look for headings */
+  line-height: 1.1;
+}
+
+.info-section h2 {
+  letter-spacing: -0.5px;
+  text-transform: capitalize;
+}
+
+/* 5. Custom Scrollbar (Pink Theme) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #FF3E6C;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #CC0044;
+}
+
+/* ── Check Reply Section ── */
+.check-reply-section {
+  margin-top: 48px;
+  padding-top: 40px;
+  border-top: 2px solid var(--border);
+}
+.check-reply-section h2 {
+  font-size: 22px; font-weight: 800;
+  color: var(--text-primary); margin-bottom: 8px;
+  font-family: var(--font-display);
+}
+.check-reply-section > p {
+  font-size: 14px; color: var(--text-muted); margin-bottom: 20px;
+}
+.check-reply-form {
+  display: flex; gap: 10px; max-width: 500px; margin-bottom: 24px;
+}
+.check-reply-form input {
+  flex: 1; padding: 11px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-full);
+  font-size: 14px; font-family: var(--font-body);
+  outline: none; transition: border-color 0.2s;
+}
+.check-reply-form input:focus { border-color: #FF3E6C; }
+.check-reply-form button {
+  padding: 11px 20px;
+  background: #FF3E6C; color: #fff;
+  border: none; border-radius: var(--radius-full);
+  font-size: 14px; font-weight: 700;
+  font-family: var(--font-body);
+  cursor: pointer; white-space: nowrap;
+  transition: all 0.2s;
+}
+.check-reply-form button:hover:not(:disabled) {
+  background: #CC0044;
+}
+.check-reply-form button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.check-reply-empty {
+  text-align: center; padding: 32px;
+  color: var(--text-muted);
+  display: flex; flex-direction: column;
+  align-items: center; gap: 8px;
+}
+.check-reply-empty span { font-size: 48px; }
+
+.check-reply-list {
+  display: flex; flex-direction: column; gap: 16px;
+  max-width: 760px;
+}
+.check-reply-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+.check-reply-card.replied { border-color: #80CBC4; }
+.check-reply-card.unread  { border-color: #FFE082; }
+
+.crc-header {
+  display: flex; justify-content: space-between;
+  align-items: center; padding: 14px 18px;
+  background: #FAFAFA; border-bottom: 1px solid var(--border);
+}
+.crc-header strong { display: block; font-size: 14px; font-weight: 700; }
+.crc-header small  { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.crc-badge {
+  font-size: 12px; font-weight: 700;
+  padding: 4px 12px; border-radius: var(--radius-full);
+}
+.crc-badge.replied { background: #E6FBF4; color: #0A7D56; }
+.crc-badge.unread  { background: #FFF6E0; color: #B37A00; }
+.crc-badge.read    { background: #F3F4F6; color: #6B7280; }
+
+.crc-subject {
+  padding: 8px 18px;
+  font-size: 12px; font-weight: 600;
+  color: #4527A0; background: #EDE7F6;
+}
+.crc-message {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.crc-message p {
+  font-size: 14px; color: var(--text-secondary);
+  line-height: 1.6; margin: 0; white-space: pre-wrap;
+}
+.crc-reply {
+  padding: 14px 18px; background: #E6FBF4;
+}
+.crc-reply strong {
+  display: block; font-size: 13px; font-weight: 700;
+  color: #0A7D56; margin-bottom: 6px;
+}
+.crc-reply p {
+  font-size: 14px; color: var(--text-secondary);
+  line-height: 1.6; margin: 0;
+}
+.crc-pending {
+  padding: 12px 18px;
+  font-size: 13px; color: #B37A00;
+  background: #FFF6E0;
+}
+

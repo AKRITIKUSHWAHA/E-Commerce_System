@@ -292,6 +292,20 @@ const deleteContactMessage = asyncHandler(async (req, res) => {
   res.json({ success: true, message: 'Message deleted' });
 });
 
+// GET /api/contact/check?email=xxx — public (user apna reply check kare)
+const getMyMessages = asyncHandler(async (req, res) => {
+  const { email } = req.query;
+  if (!email) {
+    return res.status(400).json({ success: false, message: 'Email required' });
+  }
+  const [messages] = await pool.query(
+    `SELECT id, name, subject, message, reply, status, created_at
+     FROM contact_messages WHERE email = ? ORDER BY created_at DESC`,
+    [email]
+  );
+  res.json({ success: true, messages });
+});
+
 module.exports = {
   getDashboard,
   getUsers,
@@ -309,4 +323,5 @@ module.exports = {
   markMessageRead,
   replyToMessage,
   deleteContactMessage,
+  getMyMessages,
 };

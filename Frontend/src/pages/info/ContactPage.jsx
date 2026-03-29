@@ -4,9 +4,20 @@ import './InfoPage.css';
 
 
 export default function ContactPage() {
-  const [form,    setForm]    = useState({ name: '', email: '', phone: '', subject: '', message: '' });
-  const [sent,    setSent]    = useState(false);
-  const [loading, setLoading] = useState(false);
+const [form,         setForm]         = useState({ name: '', email: '', phone: '', subject: '', message: '' });
+const [sent,         setSent]         = useState(false);
+const [loading,      setLoading]      = useState(false);
+const [checkEmail,   setCheckEmail]   = useState('');
+const [myMessages,   setMyMessages]   = useState([]);
+const [checking,     setChecking]     = useState(false);
+const [checked,      setChecked]      = useState(false);
+  // ✨ NEW: Mouse move glow effect handler (Adding, not deleting)
+  const handleMouseMove = (e) => {
+    const { currentTarget: target, clientX: x, clientY: y } = e;
+    const rect = target.getBoundingClientRect();
+    target.style.setProperty("--mouse-x", `${x - rect.left}px`);
+    target.style.setProperty("--mouse-y", `${y - rect.top}px`);
+  };
 
   const handle = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -23,8 +34,24 @@ export default function ContactPage() {
   }
 };
 
+const handleCheckReply = async (e) => {
+  e.preventDefault();
+  if (!checkEmail.trim()) return;
+  setChecking(true);
+  try {
+    const data = await api.getMyMessages(checkEmail);
+    setMyMessages(data.messages || []);
+    setChecked(true);
+  } catch (err) {
+    alert(err.message || 'Something went wrong');
+  } finally {
+    setChecking(false);
+  }
+};
+
   return (
-    <div className="info-page container">
+    /* ✨ ADDED onMouseMove handler here */
+    <div className="info-page container" onMouseMove={handleMouseMove}>
       <div className="info-hero">
         <h1>💬 Contact Us</h1>
         <p>We'd love to hear from you. Send us a message!</p>
@@ -39,9 +66,9 @@ export default function ContactPage() {
 
           <div className="contact-details">
             {[
-              { icon: '📧', label: 'Email',    value: 'support@ecommerce.com',  link: 'mailto:support@ecommerce.com' },
-              { icon: '📞', label: 'Phone',    value: '1800-001-234 (Free)',     link: 'tel:+911800001234' },
-              { icon: '🕐', label: 'Hours',    value: 'Mon–Sat: 9AM – 6PM',     link: null },
+              { icon: '📧', label: 'Email',     value: 'support@ecommerce.com',  link: 'mailto:support@ecommerce.com' },
+              { icon: '📞', label: 'Phone',     value: '1800-001-234 (Free)',     link: 'tel:+911800001234' },
+              { icon: '🕐', label: 'Hours',     value: 'Mon–Sat: 9AM – 6PM',     link: null },
               { icon: '📍', label: 'Address',  value: 'New Delhi, India 🇮🇳',   link: null },
             ].map(d => (
               <div key={d.label} className="contact-detail">
@@ -55,6 +82,69 @@ export default function ContactPage() {
                 </div>
               </div>
             ))}
+
+            {/* ── Check My Reply Section ── */}
+<div className="check-reply-section">
+  <h2>📬 Check Admin Reply</h2>
+  <p>Enter your email to see if admin has replied to your message.</p>
+
+  <form className="check-reply-form" onSubmit={handleCheckReply}>
+    <input
+      type="email"
+      value={checkEmail}
+      onChange={e => { setCheckEmail(e.target.value); setChecked(false); setMyMessages([]); }}
+      placeholder="Enter your email address"
+      required
+    />
+    <button type="submit" disabled={checking}>
+      {checking ? '⏳ Checking...' : '🔍 Check Reply'}
+    </button>
+  </form>
+
+  {checked && myMessages.length === 0 && (
+    <div className="check-reply-empty">
+      <span>📭</span>
+      <p>No messages found for this email.</p>
+    </div>
+  )}
+
+  {myMessages.length > 0 && (
+    <div className="check-reply-list">
+      {myMessages.map(msg => (
+        <div key={msg.id} className={`check-reply-card ${msg.status}`}>
+          <div className="crc-header">
+            <div>
+              <strong>Your Message</strong>
+              <small>{new Date(msg.created_at).toLocaleDateString('en-IN', {
+                day: 'numeric', month: 'short', year: 'numeric',
+              })}</small>
+            </div>
+            <span className={`crc-badge ${msg.status}`}>
+              {msg.status === 'unread'  ? '⏳ Pending'  :
+               msg.status === 'replied' ? '✅ Replied'  : '👁️ Seen'}
+            </span>
+          </div>
+          {msg.subject && (
+            <div className="crc-subject">Subject: {msg.subject}</div>
+          )}
+          <div className="crc-message">
+            <p>{msg.message}</p>
+          </div>
+          {msg.reply ? (
+            <div className="crc-reply">
+              <strong>💬 Admin Reply:</strong>
+              <p>{msg.reply}</p>
+            </div>
+          ) : (
+            <div className="crc-pending">
+              ⏳ Admin hasn't replied yet. We'll get back to you within 24 hours.
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  )}
+</div>
           </div>
 
           <div className="contact-note">
