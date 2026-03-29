@@ -88,6 +88,15 @@ replyToMessage:         (id, body) => request('PUT', `/admin/contact-messages/${
 deleteContactMessage:   (id)   => request('DELETE', `/admin/contact-messages/${id}`),
 getMyMessages: (email) => request('GET', `/contact/check?email=${encodeURIComponent(email)}`),
 
+
+// ── Ads ───────────────────────────────────────────────
+getAds:      ()         => request('GET',    '/ads'),
+getAdminAds: ()         => request('GET',    '/admin/ads'),
+createAd:    (body)     => request('POST',   '/admin/ads', body),
+updateAd:    (id, body) => request('PUT',    `/admin/ads/${id}`, body),
+deleteAd:    (id)       => request('DELETE', `/admin/ads/${id}`),
+toggleAd:    (id)       => request('PATCH',  `/admin/ads/${id}/toggle`),
+
   // ── Page View Tracking ────────────────────────────────
   trackView: (pathname) => {
     try {

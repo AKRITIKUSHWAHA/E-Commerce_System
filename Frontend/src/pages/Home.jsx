@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import Hero        from '../components/Hero/Hero';
 import Filters     from '../components/Filters/Filters';
 import ProductCard from '../components/ProductCard/ProductCard';
 import { api }     from '../services/api';
+import AdsDisplay from '../components/AdsDisplay/AdsDisplay';
 import './Home.css';
 
 const defaultFilters = {
@@ -15,10 +17,25 @@ const defaultFilters = {
 };
 
 export default function Home({ searchQuery }) {
-  const [filters,    setFilters]    = useState(defaultFilters);
+  const location = useLocation();
+
+  // URL se category read karo (footer links ke liye)
+  const getInitialCategory = () => {
+    const params = new URLSearchParams(location.search);
+    return params.get('cat') || 'all';
+  };
+
+  const [filters,    setFilters]    = useState({ ...defaultFilters, category: getInitialCategory() });
   const [products,   setProducts]   = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading,    setLoading]    = useState(true);
+
+  // URL change hone par category update karo
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const cat = params.get('cat') || 'all';
+    setFilters(f => ({ ...f, category: cat }));
+  }, [location.search]);
 
   useEffect(() => {
     fetchAll(false);
@@ -62,21 +79,10 @@ export default function Home({ searchQuery }) {
       list = list.filter(p => activeSlugs.includes(p.category_slug));
     }
 
-    if (filters.priceMin !== '') {
-      list = list.filter(p => p.price >= Number(filters.priceMin));
-    }
-    if (filters.priceMax !== '') {
-      list = list.filter(p => p.price <= Number(filters.priceMax));
-    }
-
-    // ── Rating filter ──
-    if (filters.rating > 0) {
-      list = list.filter(p => parseFloat(p.avg_rating) >= filters.rating);
-    }
-
-    if (filters.inStock) {
-      list = list.filter(p => p.stock > 0);
-    }
+    if (filters.priceMin !== '') list.filter(p => p.price >= Number(filters.priceMin));
+    if (filters.priceMax !== '') list.filter(p => p.price <= Number(filters.priceMax));
+    if (filters.rating > 0)      list = list.filter(p => parseFloat(p.avg_rating) >= filters.rating);
+    if (filters.inStock)          list = list.filter(p => p.stock > 0);
 
     switch (filters.sort) {
       case 'price-asc':  list.sort((a,b) => a.price - b.price); break;
@@ -90,13 +96,13 @@ export default function Home({ searchQuery }) {
         break;
       default: break;
     }
-
     return list;
   }, [products, filters, searchQuery, categories]);
 
   return (
     <div className="home-page">
       <Hero />
+<AdsDisplay position="home_top" />
 
       {/* Category pills */}
       <div className="container">
@@ -118,6 +124,8 @@ export default function Home({ searchQuery }) {
           ))}
         </div>
       </div>
+      <AdsDisplay position="home_middle" />
+
 
       <div className="container home-layout">
         <div className="home-sidebar">
@@ -161,9 +169,7 @@ export default function Home({ searchQuery }) {
               <span>😕</span>
               <h3>No Products Found</h3>
               <p>Try changing filters or search for something else.</p>
-              <button onClick={() => setFilters(defaultFilters)}>
-                Clear All Filters
-              </button>
+              <button onClick={() => setFilters(defaultFilters)}>Clear All Filters</button>
             </div>
           )}
         </div>

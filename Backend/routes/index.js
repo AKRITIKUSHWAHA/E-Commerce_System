@@ -34,6 +34,25 @@ const {
   getMyMessages,
 } = require('../controllers/adminController');
 
+
+const {
+  // ...existing...
+  getAds, getAdminAds, createAd, updateAd, deleteAd, toggleAd,
+} = require('../controllers/adminController');
+
+// Public
+router.get('/ads', getAds);
+
+// Admin
+router.get   ('/admin/ads',          protect, adminOnly, getAdminAds);
+router.post  ('/admin/ads',          protect, adminOnly, createAd);
+router.put   ('/admin/ads/:id',      protect, adminOnly, updateAd);
+router.delete('/admin/ads/:id',      protect, adminOnly, deleteAd);
+router.patch ('/admin/ads/:id/toggle', protect, adminOnly, toggleAd);
+
+
+
+
 // Contact routes mein add karo
 router.get('/contact/check', getMyMessages); // public
 

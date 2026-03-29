@@ -306,6 +306,73 @@ const getMyMessages = asyncHandler(async (req, res) => {
   res.json({ success: true, messages });
 });
 
+
+
+// ══════════════════════════════════════════
+//  ADS
+// ══════════════════════════════════════════
+
+// GET /api/ads — public (active ads)
+const getAds = asyncHandler(async (req, res) => {
+  const today = new Date().toISOString().split('T')[0];
+  const [ads] = await pool.query(`
+    SELECT * FROM ads
+    WHERE is_active = 1
+      AND (start_date IS NULL OR start_date <= ?)
+      AND (end_date   IS NULL OR end_date   >= ?)
+    ORDER BY created_at DESC
+  `, [today, today]);
+  res.json({ success: true, ads });
+});
+
+// GET /api/admin/ads — admin (all)
+const getAdminAds = asyncHandler(async (req, res) => {
+  const [ads] = await pool.query('SELECT * FROM ads ORDER BY created_at DESC');
+  res.json({ success: true, ads });
+});
+
+// POST /api/admin/ads
+const createAd = asyncHandler(async (req, res) => {
+  const { title, description, image_url, link_url, type, position, bg_color, text_color, start_date, end_date } = req.body;
+  const [result] = await pool.query(
+    `INSERT INTO ads (title, description, image_url, link_url, type, position, bg_color, text_color, start_date, end_date)
+     VALUES (?,?,?,?,?,?,?,?,?,?)`,
+    [title || '', description || '', image_url || '', link_url || '',
+     type || 'banner', position || 'home_top',
+     bg_color || '#FF3E6C', text_color || '#ffffff',
+     start_date || null, end_date || null]
+  );
+  res.status(201).json({ success: true, id: result.insertId, message: 'Ad created!' });
+});
+
+// PUT /api/admin/ads/:id
+const updateAd = asyncHandler(async (req, res) => {
+  const { title, description, image_url, link_url, type, position, bg_color, text_color, is_active, start_date, end_date } = req.body;
+  await pool.query(
+    `UPDATE ads SET title=?, description=?, image_url=?, link_url=?, type=?, position=?,
+     bg_color=?, text_color=?, is_active=?, start_date=?, end_date=? WHERE id=?`,
+    [title, description, image_url, link_url, type, position,
+     bg_color, text_color, is_active ? 1 : 0, start_date || null, end_date || null, req.params.id]
+  );
+  res.json({ success: true, message: 'Ad updated!' });
+});
+
+// DELETE /api/admin/ads/:id
+const deleteAd = asyncHandler(async (req, res) => {
+  await pool.query('DELETE FROM ads WHERE id = ?', [req.params.id]);
+  res.json({ success: true, message: 'Ad deleted!' });
+});
+
+// PATCH /api/admin/ads/:id/toggle
+const toggleAd = asyncHandler(async (req, res) => {
+  const [[ad]] = await pool.query('SELECT id, is_active FROM ads WHERE id = ?', [req.params.id]);
+  if (!ad) return res.status(404).json({ success: false, message: 'Ad not found' });
+  await pool.query('UPDATE ads SET is_active = ? WHERE id = ?', [ad.is_active ? 0 : 1, ad.id]);
+  res.json({ success: true, is_active: !ad.is_active });
+});
+
+
+
 module.exports = {
   getDashboard,
   getUsers,
@@ -324,4 +391,10 @@ module.exports = {
   replyToMessage,
   deleteContactMessage,
   getMyMessages,
+    getAds,
+     getAdminAds,
+      createAd, updateAd,
+       deleteAd,
+       toggleAd,
+
 };

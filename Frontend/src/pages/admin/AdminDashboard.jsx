@@ -267,6 +267,177 @@ Object.entries(form).forEach(([k, v]) => {
   );
 }
 
+function AdModal({ ad, onClose, onSaved }) {
+  const isEdit = !!ad;
+  const [loading, setLoading] = useState(false);
+  const [error,   setError]   = useState('');
+  const [form, setForm] = useState({
+    title:       ad?.title       || '',
+    description: ad?.description || '',
+    image_url:   ad?.image_url   || '',
+    link_url:    ad?.link_url    || '',
+    type:        ad?.type        || 'banner',
+    position:    ad?.position    || 'home_top',
+    bg_color:    ad?.bg_color    || '#FF3E6C',
+    text_color:  ad?.text_color  || '#ffffff',
+    is_active:   ad?.is_active !== false && ad?.is_active !== 0,
+    start_date:  ad?.start_date  || '',
+    end_date:    ad?.end_date    || '',
+  });
+
+  const handle = (e) => {
+    const { name, value, type, checked } = e.target;
+    setForm(f => ({ ...f, [name]: type === 'checkbox' ? checked : value }));
+  };
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      isEdit ? await api.updateAd(ad.id, form) : await api.createAd(form);
+      onSaved();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="adm-modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="adm-modal">
+        <div className="adm-modal-header">
+          <h2>{isEdit ? '✏️ Edit Ad' : '➕ Create New Ad'}</h2>
+          <button className="adm-modal-close" onClick={onClose}>✕</button>
+        </div>
+        <form className="adm-pform" onSubmit={submit}>
+          <div className="adm-pform-grid">
+
+            <div className="apf apf-full">
+              <label>Ad Title</label>
+              <input name="title" value={form.title} onChange={handle}
+                placeholder="e.g. 🎉 Grand Sale — Up to 70% Off!" />
+            </div>
+
+            <div className="apf apf-full">
+              <label>Description / Message</label>
+              <textarea name="description" value={form.description} onChange={handle}
+                rows={2} placeholder="Short description shown in the ad" />
+            </div>
+
+            <div className="apf apf-full">
+              <label>Image URL <small>(optional — for banner/popup)</small></label>
+              <input name="image_url" value={form.image_url} onChange={handle}
+                placeholder="https://example.com/ad-image.jpg" />
+              {form.image_url && (
+                <img src={form.image_url} alt="preview"
+                  style={{ marginTop: 8, height: 80, objectFit: 'cover', borderRadius: 8 }}
+                  onError={e => e.target.style.display='none'} />
+              )}
+            </div>
+
+            <div className="apf apf-full">
+              <label>Click Link URL <small>(optional — where user goes on click)</small></label>
+              <input name="link_url" value={form.link_url} onChange={handle}
+                placeholder="https://yoursite.com/sale or /home?cat=women" />
+            </div>
+
+            <div className="apf">
+              <label>Ad Type</label>
+              <select name="type" value={form.type} onChange={handle}>
+                <option value="banner">🖼️ Banner (Top/Bottom strip)</option>
+                <option value="text">📝 Text (Thin announcement bar)</option>
+                <option value="popup">🎯 Popup (Shows on page load)</option>
+              </select>
+            </div>
+
+            <div className="apf">
+              <label>Position</label>
+              <select name="position" value={form.position} onChange={handle}>
+                <option value="home_top">🏠 Home Top</option>
+                <option value="home_middle">📍 Home Middle</option>
+                <option value="home_bottom">⬇️ Home Bottom</option>
+                <option value="all_pages">🌐 All Pages</option>
+              </select>
+            </div>
+
+            <div className="apf">
+              <label>Background Color</label>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <input type="color" name="bg_color" value={form.bg_color} onChange={handle}
+                  style={{ width: 48, height: 40, border: 'none', cursor: 'pointer', borderRadius: 8 }} />
+                <input name="bg_color" value={form.bg_color} onChange={handle}
+                  placeholder="#FF3E6C" style={{ flex: 1 }} />
+              </div>
+            </div>
+
+            <div className="apf">
+              <label>Text Color</label>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <input type="color" name="text_color" value={form.text_color} onChange={handle}
+                  style={{ width: 48, height: 40, border: 'none', cursor: 'pointer', borderRadius: 8 }} />
+                <input name="text_color" value={form.text_color} onChange={handle}
+                  placeholder="#ffffff" style={{ flex: 1 }} />
+              </div>
+            </div>
+
+            <div className="apf">
+              <label>Start Date <small>(optional)</small></label>
+              <input type="date" name="start_date" value={form.start_date} onChange={handle} />
+            </div>
+
+            <div className="apf">
+              <label>End Date <small>(optional)</small></label>
+              <input type="date" name="end_date" value={form.end_date} onChange={handle} />
+            </div>
+
+            <div className="apf apf-check">
+              <label>
+                <input type="checkbox" name="is_active" checked={form.is_active} onChange={handle} />
+                Active (Ad will be shown to users)
+              </label>
+            </div>
+
+            {/* Live Preview */}
+            <div className="apf apf-full">
+              <label>Live Preview</label>
+              <div className="adm-ad-live-preview"
+                style={{ background: form.bg_color, color: form.text_color }}>
+                {form.image_url && (
+                  <img src={form.image_url} alt="preview"
+                    style={{ height: 50, objectFit: 'contain', borderRadius: 6, marginRight: 12 }}
+                    onError={e => e.target.style.display='none'} />
+                )}
+                <div>
+                  {form.title && <strong style={{ display: 'block', fontSize: 14 }}>{form.title}</strong>}
+                  {form.description && <span style={{ fontSize: 12, opacity: 0.9 }}>{form.description}</span>}
+                </div>
+                {form.link_url && (
+                  <span style={{
+                    marginLeft: 'auto', padding: '4px 12px',
+                    background: '#fff', borderRadius: 999,
+                    fontSize: 12, fontWeight: 700,
+                    color: form.bg_color, whiteSpace: 'nowrap',
+                  }}>Shop Now →</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {error && <div className="adm-form-error">⚠️ {error}</div>}
+          <div className="adm-modal-footer">
+            <button type="button" className="adm-btn-cancel" onClick={onClose}>Cancel</button>
+            <button type="submit" className="adm-btn-save" disabled={loading}>
+              {loading ? 'Saving...' : isEdit ? '✅ Update Ad' : '✅ Create Ad'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -292,6 +463,10 @@ const [unreadCount,   setUnreadCount]   = useState(0);
 const [replyText,     setReplyText]     = useState({});
 const [replyingTo,    setReplyingTo]    = useState(null);
   const intervalRef = useRef(null);
+  const [ads,       setAds]       = useState([]);
+const [showAdModal, setShowAdModal] = useState(false);
+const [editAd,    setEditAd]    = useState(null);
+
 
   useEffect(() => {
     if (!user || user.role !== 'admin') { navigate('/admin'); return; }
@@ -318,6 +493,9 @@ const loadAll = async () => {
       api.getAdminOrders(),
       api.getPageViews(),
       api.getContactMessages(),
+      api.getAdminAds(),  // add karo Promise.all mein
+
+      
     ]);
     setDash(d);
     setProducts(p.products     || []);
@@ -328,6 +506,8 @@ const loadAll = async () => {
     setMessages(m.messages     || []);
     setUnreadCount(m.unread    || 0);
     setLastRefresh(new Date());
+    setAds(ads_data.ads || []);
+
       } catch (err) {
       console.error('loadAll error:', err);
     } finally {
@@ -438,6 +618,7 @@ const navItems = [
   { id: 'orders',     icon: '🛒', label: 'Orders'     },
   { id: 'customers',  icon: '👥', label: 'Customers'  },
   { id: 'messages',   icon: '💬', label: 'Messages'   },
+  { id: 'ads', icon: '📢', label: 'Ads' },
 ];
   return (
     <>
@@ -485,6 +666,8 @@ const navItems = [
                 {tab === 'orders'     && 'All Orders'}
 {tab === 'customers'  && 'Customers'}
 {tab === 'messages'   && 'Contact Messages'}
+{tab === 'ads' && 'Ads Management'}
+
               </h1>
               <small style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px', display: 'block' }}>
                 Last updated: {lastRefresh.toLocaleTimeString('en-IN')} · Auto-refreshes every 30s
@@ -1019,6 +1202,97 @@ const navItems = [
     )}
   </div>
 )}
+
+
+{/* ── ADS ── */}
+{tab === 'ads' && (
+  <div className="adm-content">
+    <div className="adm-search-bar">
+      <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>📢 Ads Management</h3>
+      <button className="adm-btn-primary"
+        onClick={() => { setEditAd(null); setShowAdModal(true); }}>
+        + Create Ad
+      </button>
+    </div>
+
+    {ads.length === 0 ? (
+      <div className="adm-empty">
+        <span>📢</span>
+        <p>No ads yet. Create your first ad!</p>
+      </div>
+    ) : (
+      <div className="adm-ads-list">
+        {ads.map(ad => (
+          <div key={ad.id} className={`adm-ad-card ${ad.is_active ? 'active' : 'inactive'}`}>
+            {/* Preview */}
+            <div className="adm-ad-preview"
+              style={{ background: ad.bg_color || '#FF3E6C', color: ad.text_color || '#fff' }}>
+              {ad.image_url && (
+                <img src={ad.image_url} alt={ad.title}
+                  onError={e => e.target.style.display='none'} />
+              )}
+              <div className="adm-ad-preview__text">
+                <strong>{ad.title || 'No Title'}</strong>
+                <span>{ad.description || ''}</span>
+              </div>
+              <span className="adm-ad-type-badge">{ad.type}</span>
+            </div>
+
+            {/* Info */}
+            <div className="adm-ad-info">
+              <div className="adm-ad-meta">
+                <span className="adm-ad-pos">📍 {ad.position}</span>
+                {ad.start_date && <span>From: {ad.start_date}</span>}
+                {ad.end_date   && <span>To: {ad.end_date}</span>}
+              </div>
+              <div className="adm-ad-actions">
+                <button
+                  className={ad.is_active ? 'adm-btn-stock-out' : 'adm-btn-stock-in'}
+                  onClick={async () => {
+                    await api.toggleAd(ad.id);
+                    setAds(prev => prev.map(a =>
+                      a.id === ad.id ? { ...a, is_active: a.is_active ? 0 : 1 } : a
+                    ));
+                    flash(ad.is_active ? 'Ad deactivated' : 'Ad activated');
+                  }}>
+                  {ad.is_active ? '⏸ Deactivate' : '▶ Activate'}
+                </button>
+                <button className="adm-btn-edit"
+                  onClick={() => { setEditAd(ad); setShowAdModal(true); }}>
+                  ✏️ Edit
+                </button>
+                <button className="adm-btn-delete"
+                  onClick={async () => {
+                    if (!window.confirm('Delete this ad?')) return;
+                    await api.deleteAd(ad.id);
+                    setAds(prev => prev.filter(a => a.id !== ad.id));
+                    flash('Ad deleted');
+                  }}>
+                  🗑️ Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+
+    {/* Ad Modal */}
+    {showAdModal && (
+      <AdModal
+        ad={editAd}
+        onClose={() => { setShowAdModal(false); setEditAd(null); }}
+        onSaved={async () => {
+          setShowAdModal(false);
+          setEditAd(null);
+          const data = await api.getAdminAds();
+          setAds(data.ads || []);
+          flash('Ad saved!');
+        }}
+      />
+    )}
+  </div>
+)}
         </main>
 
 
@@ -1037,6 +1311,11 @@ const navItems = [
             }}
           />
         )}
+
+
+
+
+        
       </div>
       <Footer />
     </>
