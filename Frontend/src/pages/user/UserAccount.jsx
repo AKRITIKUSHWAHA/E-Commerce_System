@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-// --- TAWMESSENGER IMPORT ---
+import { generateInvoice } from '../../components/Invoice/Invoice';// --- TAWMESSENGER IMPORT ---
 // Agar aapka folder structure: src/components/TawkMessenger/TawkMessenger.jsx hai
 import TawkMessenger from '../../components/TawkMessenger/TawkMessenger';
 import './UserAccount.css';
@@ -30,34 +28,7 @@ const getImageUrl = (img) => {
 };
 
 const downloadInvoice = (order) => {
-  const doc = new jsPDF();
-  doc.setFontSize(20);
-  doc.text("INVOICE - Elite E-Commerce", 14, 22);
-  doc.setFontSize(10);
-  doc.text(`Order ID: #${order.id}`, 14, 32);
-  doc.text(`Date: ${new Date(order.created_at).toLocaleDateString()}`, 14, 38);
-  doc.text(`Customer: ${order.customer_name}`, 14, 44);
-  doc.text(`Payment: ${order.payment_method} (${order.payment_status})`, 14, 50);
-
-  const tableColumn = ["Product", "Qty", "Price", "Total"];
-  const tableRows = order.items.map(item => [
-    item.product_name,
-    item.quantity,
-    `INR ${item.price}`,
-    `INR ${item.price * item.quantity}`
-  ]);
-
-  autoTable(doc, {
-    startY: 58,
-    head: [tableColumn],
-    body: tableRows,
-    theme: 'striped'
-  });
-
-  const finalY = doc.lastAutoTable.finalY + 10;
-  doc.setFontSize(14);
-  doc.text(`Total Paid: INR ${Number(order.total_amount).toLocaleString()}`, 14, finalY);
-  doc.save(`Invoice_Order_${order.id}.pdf`);
+  generateInvoice(order);
 };
 
 function ReviewItem({ item }) {

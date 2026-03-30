@@ -51,7 +51,20 @@ router.delete('/admin/ads/:id',      protect, adminOnly, deleteAd);
 router.patch ('/admin/ads/:id/toggle', protect, adminOnly, toggleAd);
 
 
+const {
+  // ...existing...
+  getBanners, getAdminBanners, createBanner, updateBanner, deleteBanner, toggleBanner,
+} = require('../controllers/adminController');
 
+// Public
+router.get('/banners', getBanners);
+
+// Admin
+router.get   ('/admin/banners',              protect, adminOnly, getAdminBanners);
+router.post  ('/admin/banners',              protect, adminOnly, createBanner);
+router.put   ('/admin/banners/:id',          protect, adminOnly, updateBanner);
+router.delete('/admin/banners/:id',          protect, adminOnly, deleteBanner);
+router.patch ('/admin/banners/:id/toggle',   protect, adminOnly, toggleBanner);
 
 // Contact routes mein add karo
 router.get('/contact/check', getMyMessages); // public

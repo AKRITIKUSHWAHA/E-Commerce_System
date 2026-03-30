@@ -1,0 +1,297 @@
+/* ══════════════════════════════════════════════════════════
+ *  🎨 THEME CONFIGURATION FILE
+ *  
+ *  SIRF IS FILE MEIN CHANGE KARO — POORA PROJECT UPDATE HOGA
+ *  
+ *  Client ka color scheme yahan set karo:
+ *  1. Primary color (main brand color)
+ *  2. Gradients
+ *  3. Typography
+ *  4. Border radius (sharp ya round)
+ *  
+ *  Preset themes neeche hain — comment/uncomment karo
+ * ══════════════════════════════════════════════════════════ */
+
+:root {
+
+  /* ════════════════════════════════════════
+   *  ✏️  STEP 1: APNA PRIMARY COLOR DAALO
+   *  Yahi ek color change karo — baaki sab
+   *  automatically isi se generate hoga
+   * ════════════════════════════════════════ */
+
+  --brand-primary:       #FF3E6C;   /* Main color — button, active, highlight */
+  --brand-primary-dark:  #CC0044;   /* Hover state */
+  --brand-primary-light: #FFF0F3;   /* Light background tint */
+  --brand-primary-mid:   #FF6B9D;   /* Gradient mid point */
+
+  /* ════════════════════════════════════════
+   *  ✏️  STEP 2: GRADIENT (header, hero, admin sidebar)
+   * ════════════════════════════════════════ */
+
+  --brand-gradient:        linear-gradient(135deg, #FF3E6C 0%, #FF6B9D 100%);
+  --brand-gradient-topbar: linear-gradient(90deg,  #FF3E6C 0%, #FF8FAB 100%);
+  --brand-gradient-hero:   linear-gradient(135deg, #FF3E6C 0%, #FF6B9D 60%, #FF8FAB 100%);
+  --brand-gradient-footer: linear-gradient(135deg, #FF3E6C 0%, #CC0044 100%);
+
+  /* ════════════════════════════════════════
+   *  ✏️  STEP 3: SIDEBAR COLOR (admin)
+   * ════════════════════════════════════════ */
+
+  --admin-sidebar-bg:     #FF3E6C;
+  --admin-sidebar-active: #ffffff;
+  --admin-sidebar-text:   rgba(255,255,255,0.85);
+  --admin-topbar-bg:      #FF3E6C;
+
+  /* ════════════════════════════════════════
+   *  ✏️  STEP 4: ACCENT COLORS
+   *  Inhe generally change nahi karna padta
+   * ════════════════════════════════════════ */
+
+  --accent-success: #0A7D56;
+  --accent-warning: #B37A00;
+  --accent-error:   #C62828;
+  --accent-info:    #4527A0;
+
+  /* ════════════════════════════════════════
+   *  BASE COLORS (generally mat badlo)
+   * ════════════════════════════════════════ */
+
+  --text-primary:   #1A1A2E;
+  --text-secondary: #4A4A6A;
+  --text-muted:     #9090A0;
+  --border:         #E8E8F0;
+  --surface:        #F8F8FC;
+  --bg:             #F4F6F9;
+  --white:          #FFFFFF;
+
+  /* ════════════════════════════════════════
+   *  ✏️  STEP 5: BORDER RADIUS (look & feel)
+   *  Sharp corners ya round corners?
+   * ════════════════════════════════════════ */
+
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-full: 9999px;
+
+  /* ════════════════════════════════════════
+   *  ✏️  STEP 6: FONTS
+   * ════════════════════════════════════════ */
+
+  --font-body:    'Inter', sans-serif;
+  --font-display: 'Poppins', sans-serif;
+
+  /* ════════════════════════════════════════
+   *  SHADOWS
+   * ════════════════════════════════════════ */
+
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.15);
+  --shadow-brand: 0 4px 14px rgba(255,62,108,0.35);
+
+  /* ════════════════════════════════════════
+   *  TRANSITIONS
+   * ════════════════════════════════════════ */
+
+  --transition: 0.2s ease;
+
+  /* ════════════════════════════════════════
+   *  TOP HEADER HEIGHT
+   * ════════════════════════════════════════ */
+
+  --top-header-height: 36px;
+
+  /* ════════════════════════════════════════
+   *  SHORTHAND ALIASES
+   *  (purana code compatible rahega)
+   * ════════════════════════════════════════ */
+
+  --primary:       var(--brand-primary);
+  --primary-dark:  var(--brand-primary-dark);
+  --primary-light: var(--brand-primary-light);
+}
+
+
+/* ══════════════════════════════════════════════════════════
+ *  🎨 READY-MADE PRESET THEMES
+ *  
+ *  Neeche se koi ek theme copy karo aur
+ *  upar wali :root block replace kar do
+ * ══════════════════════════════════════════════════════════ */
+
+
+/* ──────────────────────────────────────────
+ *  THEME 1: 🩷 PINK (DEFAULT — Myntra style)
+ * ────────────────────────────────────────── */
+/*
+:root {
+  --brand-primary:        #FF3E6C;
+  --brand-primary-dark:   #CC0044;
+  --brand-primary-light:  #FFF0F3;
+  --brand-primary-mid:    #FF6B9D;
+  --brand-gradient:       linear-gradient(135deg, #FF3E6C 0%, #FF6B9D 100%);
+  --brand-gradient-topbar:linear-gradient(90deg,  #FF3E6C 0%, #FF8FAB 100%);
+  --brand-gradient-hero:  linear-gradient(135deg, #FF3E6C 0%, #FF6B9D 60%, #FF8FAB 100%);
+  --brand-gradient-footer:linear-gradient(135deg, #FF3E6C 0%, #CC0044 100%);
+  --admin-sidebar-bg:     #FF3E6C;
+  --admin-sidebar-active: #ffffff;
+  --admin-sidebar-text:   rgba(255,255,255,0.85);
+  --admin-topbar-bg:      #FF3E6C;
+  --shadow-brand: 0 4px 14px rgba(255,62,108,0.35);
+  --primary:       #FF3E6C;
+  --primary-dark:  #CC0044;
+  --primary-light: #FFF0F3;
+}
+*/
+
+/* ──────────────────────────────────────────
+ *  THEME 2: 🔵 BLUE (Flipkart style)
+ * ────────────────────────────────────────── */
+/*
+:root {
+  --brand-primary:        #2874F0;
+  --brand-primary-dark:   #1a5abf;
+  --brand-primary-light:  #EEF4FF;
+  --brand-primary-mid:    #5a96f5;
+  --brand-gradient:       linear-gradient(135deg, #2874F0 0%, #5a96f5 100%);
+  --brand-gradient-topbar:linear-gradient(90deg,  #2874F0 0%, #1a5abf 100%);
+  --brand-gradient-hero:  linear-gradient(135deg, #2874F0 0%, #5a96f5 60%, #89bcff 100%);
+  --brand-gradient-footer:linear-gradient(135deg, #2874F0 0%, #1a5abf 100%);
+  --admin-sidebar-bg:     #2874F0;
+  --admin-sidebar-active: #ffffff;
+  --admin-sidebar-text:   rgba(255,255,255,0.85);
+  --admin-topbar-bg:      #2874F0;
+  --shadow-brand: 0 4px 14px rgba(40,116,240,0.35);
+  --primary:       #2874F0;
+  --primary-dark:  #1a5abf;
+  --primary-light: #EEF4FF;
+}
+*/
+
+/* ──────────────────────────────────────────
+ *  THEME 3: 🟠 ORANGE (Amazon style)
+ * ────────────────────────────────────────── */
+/*
+:root {
+  --brand-primary:        #FF9900;
+  --brand-primary-dark:   #cc7a00;
+  --brand-primary-light:  #FFF8EE;
+  --brand-primary-mid:    #FFB84D;
+  --brand-gradient:       linear-gradient(135deg, #FF9900 0%, #FFB84D 100%);
+  --brand-gradient-topbar:linear-gradient(90deg,  #232F3E 0%, #374151 100%);
+  --brand-gradient-hero:  linear-gradient(135deg, #FF9900 0%, #FFB84D 60%, #FFD08A 100%);
+  --brand-gradient-footer:linear-gradient(135deg, #232F3E 0%, #374151 100%);
+  --admin-sidebar-bg:     #232F3E;
+  --admin-sidebar-active: #FF9900;
+  --admin-sidebar-text:   rgba(255,255,255,0.85);
+  --admin-topbar-bg:      #232F3E;
+  --shadow-brand: 0 4px 14px rgba(255,153,0,0.35);
+  --primary:       #FF9900;
+  --primary-dark:  #cc7a00;
+  --primary-light: #FFF8EE;
+}
+*/
+
+/* ──────────────────────────────────────────
+ *  THEME 4: 🟢 GREEN (Fresh / Grocery style)
+ * ────────────────────────────────────────── */
+/*
+:root {
+  --brand-primary:        #1AAB6D;
+  --brand-primary-dark:   #118A56;
+  --brand-primary-light:  #E6FBF4;
+  --brand-primary-mid:    #34C785;
+  --brand-gradient:       linear-gradient(135deg, #1AAB6D 0%, #34C785 100%);
+  --brand-gradient-topbar:linear-gradient(90deg,  #1AAB6D 0%, #118A56 100%);
+  --brand-gradient-hero:  linear-gradient(135deg, #1AAB6D 0%, #34C785 60%, #6DDCAA 100%);
+  --brand-gradient-footer:linear-gradient(135deg, #1AAB6D 0%, #118A56 100%);
+  --admin-sidebar-bg:     #1AAB6D;
+  --admin-sidebar-active: #ffffff;
+  --admin-sidebar-text:   rgba(255,255,255,0.85);
+  --admin-topbar-bg:      #1AAB6D;
+  --shadow-brand: 0 4px 14px rgba(26,171,109,0.35);
+  --primary:       #1AAB6D;
+  --primary-dark:  #118A56;
+  --primary-light: #E6FBF4;
+}
+*/
+
+/* ──────────────────────────────────────────
+ *  THEME 5: 🟣 PURPLE (Premium / Luxury style)
+ * ────────────────────────────────────────── */
+/*
+:root {
+  --brand-primary:        #7B2FF7;
+  --brand-primary-dark:   #5A1DB5;
+  --brand-primary-light:  #F3EEFF;
+  --brand-primary-mid:    #A06AF9;
+  --brand-gradient:       linear-gradient(135deg, #7B2FF7 0%, #A06AF9 100%);
+  --brand-gradient-topbar:linear-gradient(90deg,  #7B2FF7 0%, #5A1DB5 100%);
+  --brand-gradient-hero:  linear-gradient(135deg, #7B2FF7 0%, #A06AF9 60%, #C9A7FF 100%);
+  --brand-gradient-footer:linear-gradient(135deg, #7B2FF7 0%, #5A1DB5 100%);
+  --admin-sidebar-bg:     #7B2FF7;
+  --admin-sidebar-active: #ffffff;
+  --admin-sidebar-text:   rgba(255,255,255,0.85);
+  --admin-topbar-bg:      #7B2FF7;
+  --shadow-brand: 0 4px 14px rgba(123,47,247,0.35);
+  --primary:       #7B2FF7;
+  --primary-dark:  #5A1DB5;
+  --primary-light: #F3EEFF;
+}
+*/
+
+/* ──────────────────────────────────────────
+ *  THEME 6: ⚫ DARK (Premium Dark style)
+ * ────────────────────────────────────────── */
+/*
+:root {
+  --brand-primary:        #E50914;
+  --brand-primary-dark:   #B20710;
+  --brand-primary-light:  #FFF0F0;
+  --brand-primary-mid:    #FF4D57;
+  --brand-gradient:       linear-gradient(135deg, #E50914 0%, #FF4D57 100%);
+  --brand-gradient-topbar:linear-gradient(90deg,  #141414 0%, #1F1F1F 100%);
+  --brand-gradient-hero:  linear-gradient(135deg, #141414 0%, #2A2A2A 100%);
+  --brand-gradient-footer:linear-gradient(135deg, #141414 0%, #0A0A0A 100%);
+  --admin-sidebar-bg:     #141414;
+  --admin-sidebar-active: #E50914;
+  --admin-sidebar-text:   rgba(255,255,255,0.85);
+  --admin-topbar-bg:      #141414;
+  --text-primary:         #FFFFFF;
+  --text-secondary:       #CCCCCC;
+  --surface:              #1F1F1F;
+  --bg:                   #0A0A0A;
+  --border:               #333333;
+  --shadow-brand: 0 4px 14px rgba(229,9,20,0.35);
+  --primary:       #E50914;
+  --primary-dark:  #B20710;
+  --primary-light: #FFF0F0;
+}
+*/
+
+/* ──────────────────────────────────────────
+ *  THEME 7: 🩵 TEAL (Modern / Tech style)
+ * ────────────────────────────────────────── */
+/*
+:root {
+  --brand-primary:        #00897B;
+  --brand-primary-dark:   #006B62;
+  --brand-primary-light:  #E0F5F3;
+  --brand-primary-mid:    #26A69A;
+  --brand-gradient:       linear-gradient(135deg, #00897B 0%, #26A69A 100%);
+  --brand-gradient-topbar:linear-gradient(90deg,  #00897B 0%, #006B62 100%);
+  --brand-gradient-hero:  linear-gradient(135deg, #00897B 0%, #26A69A 60%, #64D8CF 100%);
+  --brand-gradient-footer:linear-gradient(135deg, #00897B 0%, #006B62 100%);
+  --admin-sidebar-bg:     #00897B;
+  --admin-sidebar-active: #ffffff;
+  --admin-sidebar-text:   rgba(255,255,255,0.85);
+  --admin-topbar-bg:      #00897B;
+  --shadow-brand: 0 4px 14px rgba(0,137,123,0.35);
+  --primary:       #00897B;
+  --primary-dark:  #006B62;
+  --primary-light: #E0F5F3;
+}
+*/

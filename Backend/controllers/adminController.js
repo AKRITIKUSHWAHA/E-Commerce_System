@@ -372,6 +372,64 @@ const toggleAd = asyncHandler(async (req, res) => {
 });
 
 
+// ══════════════════════════════════════════
+//  HERO BANNERS
+// ══════════════════════════════════════════
+
+// GET /api/banners — public
+const getBanners = asyncHandler(async (req, res) => {
+  const [banners] = await pool.query(
+    'SELECT * FROM hero_banners WHERE is_active = 1 ORDER BY sort_order ASC'
+  );
+  res.json({ success: true, banners });
+});
+
+// GET /api/admin/banners — admin (all)
+const getAdminBanners = asyncHandler(async (req, res) => {
+  const [banners] = await pool.query('SELECT * FROM hero_banners ORDER BY sort_order ASC');
+  res.json({ success: true, banners });
+});
+
+// POST /api/admin/banners
+const createBanner = asyncHandler(async (req, res) => {
+  const { title, subtitle, cta_text, cta_link, bg_gradient, image_url, sort_order } = req.body;
+  const [result] = await pool.query(
+    `INSERT INTO hero_banners (title, subtitle, cta_text, cta_link, bg_gradient, image_url, sort_order)
+     VALUES (?,?,?,?,?,?,?)`,
+    [title, subtitle||'', cta_text||'Shop Now', cta_link||'/home',
+     bg_gradient||'linear-gradient(135deg, #FF3E6C 0%, #FF7043 100%)',
+     image_url||'', sort_order||0]
+  );
+  res.status(201).json({ success: true, id: result.insertId });
+});
+
+// PUT /api/admin/banners/:id
+const updateBanner = asyncHandler(async (req, res) => {
+  const { title, subtitle, cta_text, cta_link, bg_gradient, image_url, sort_order, is_active } = req.body;
+  await pool.query(
+    `UPDATE hero_banners SET title=?, subtitle=?, cta_text=?, cta_link=?,
+     bg_gradient=?, image_url=?, sort_order=?, is_active=? WHERE id=?`,
+    [title, subtitle, cta_text, cta_link, bg_gradient, image_url,
+     sort_order||0, is_active ? 1 : 0, req.params.id]
+  );
+  res.json({ success: true, message: 'Banner updated!' });
+});
+
+// DELETE /api/admin/banners/:id
+const deleteBanner = asyncHandler(async (req, res) => {
+  await pool.query('DELETE FROM hero_banners WHERE id = ?', [req.params.id]);
+  res.json({ success: true, message: 'Banner deleted!' });
+});
+
+// PATCH /api/admin/banners/:id/toggle
+const toggleBanner = asyncHandler(async (req, res) => {
+  const [[b]] = await pool.query('SELECT id, is_active FROM hero_banners WHERE id=?', [req.params.id]);
+  if (!b) return res.status(404).json({ success: false, message: 'Not found' });
+  await pool.query('UPDATE hero_banners SET is_active=? WHERE id=?', [b.is_active ? 0 : 1, b.id]);
+  res.json({ success: true, is_active: !b.is_active });
+});
+
+
 
 module.exports = {
   getDashboard,
@@ -396,5 +454,6 @@ module.exports = {
       createAd, updateAd,
        deleteAd,
        toggleAd,
+       getBanners, getAdminBanners, createBanner, updateBanner, deleteBanner, toggleBanner,
 
 };

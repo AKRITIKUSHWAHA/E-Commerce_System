@@ -1,0 +1,32 @@
+Kaise use karo — 3 simple steps:
+Step 1 — theme.css kholо
+Step 2 — Client ka color batao, bas --brand-primary change karo:
+css--brand-primary:       #2874F0;   /* Flipkart blue */
+--brand-primary-dark:  #1a5abf;
+--brand-primary-light: #EEF4FF;
+--brand-primary-mid:   #5a96f5;
+Step 3 — Gradients match karo:
+css--brand-gradient: linear-gradient(135deg, #2874F0 0%, #5a96f5 100%);
+```
+
+**Bas! Poora project update!** 🚀
+
+---
+
+## Client ne logo diya — color kaise nikale?
+```
+Chrome DevTools → Color Picker tool
+ya
+imagecolorpicker.com pe logo upload karo
+→ exact hex code milega
+7 ready-made themes hain:
+
+🩷 Pink (default)
+🔵 Blue (Flipkart)
+🟠 Orange (Amazon)
+🟢 Green (Grocery)
+🟣 Purple (Luxury)
+⚫ Dark (Netflix)
+🩵 Teal (Tech)
+
+Sirf comment/uncomment karo — done! 🎨

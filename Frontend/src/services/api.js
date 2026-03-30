@@ -97,6 +97,15 @@ updateAd:    (id, body) => request('PUT',    `/admin/ads/${id}`, body),
 deleteAd:    (id)       => request('DELETE', `/admin/ads/${id}`),
 toggleAd:    (id)       => request('PATCH',  `/admin/ads/${id}/toggle`),
 
+
+// ── Banners ───────────────────────────────────────────
+getBanners:      ()         => request('GET',    '/banners'),
+getAdminBanners: ()         => request('GET',    '/admin/banners'),
+createBanner:    (body)     => request('POST',   '/admin/banners', body),
+updateBanner:    (id, body) => request('PUT',    `/admin/banners/${id}`, body),
+deleteBanner:    (id)       => request('DELETE', `/admin/banners/${id}`),
+toggleBanner:    (id)       => request('PATCH',  `/admin/banners/${id}/toggle`),
+
   // ── Page View Tracking ────────────────────────────────
   trackView: (pathname) => {
     try {
