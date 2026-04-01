@@ -1,4 +1,6 @@
 .home-page { padding-bottom: 48px; }
+.home-page { width: 100% }
+.home-main { min-width: 0 }
 
 /* ── Category strip ── */
 .cat-strip {
@@ -7,6 +9,7 @@
   overflow-x: auto;
   padding: 16px 0;
   scrollbar-width: none;
+   width: 100% 
 }
 .cat-strip::-webkit-scrollbar { display: none; }
 

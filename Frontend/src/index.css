@@ -54,6 +54,11 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   padding-bottom: 48px;
+  overflow-x: hidden;
+  width: 100% ;
+  min-width: 100%;     /* ← yeh add karo */
+  overflow-x: hidden;
+  
 }
 
 a      { text-decoration: none; color: inherit; }
@@ -66,9 +71,10 @@ ul     { list-style: none; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: var(--radius-full); }
 
-/* Utilities */
+/* ── Container — beech mein nahi aayega choti screen pe ── */
 .container {
-  max-width: 1280px;
+  width: 100%;
+  max-width: 100%;     /* ← sirf yeh change karo */
   margin: 0 auto;
   padding: 0 16px;
 }
@@ -102,9 +108,7 @@ ul     { list-style: none; }
 /* ══ Top Header — User pages ═════════════════════════════ */
 .top-header {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   z-index: 101;
   background: linear-gradient(135deg, #6C63FF 0%, #FF3E6C 100%);
   height: var(--top-header-height);
@@ -122,8 +126,7 @@ ul     { list-style: none; }
 /* ══ Admin Header ════════════════════════════════════════ */
 .admin-header {
   position: sticky;
-  top: 0;
-  z-index: 100;
+  top: 0; z-index: 100;
   background: linear-gradient(135deg, #6C63FF 0%, #FF3E6C 100%);
   height: var(--top-header-height);
   display: flex;
@@ -140,10 +143,3 @@ ul     { list-style: none; }
   color: #fff;
   letter-spacing: 0.3px;
 }
-/* .admin-header__logo {
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.5px;
-} */

@@ -114,8 +114,15 @@
 }
 .ad-popup__close:hover { background: rgba(255,255,255,0.4); }
 .ad-popup__img {
-  width: 100%; max-height: 220px;
-  object-fit: cover;
+  width: 100%;             /* Image ko poori width dene ke liye */
+  height: auto;            /* Height ko image ke ratio ke hisaab se adjust hone dein */
+  max-height: 350px;       /* Aap isse bada kar sakte hain jitni badi image chahiye */
+  display: block;
+  margin: 0 auto;          /* Center mein rakhne ke liye */
+  
+  /* ─── DO NOT CROP FIX ─── */
+  object-fit: contain;     /* Isse image kabhi nahi kategi aur poori dikhegi */
+  background-color: transparent; /* Agar side mein jagah bache toh wo transparent rahegi */
 }
 .ad-popup__content {
   padding: 24px;
@@ -139,6 +146,7 @@
   text-decoration: none;
   margin-bottom: 12px;
   transition: all 0.2s;
+  color: black;
 }
 .ad-popup__btn:hover {
   transform: translateY(-2px);
