@@ -3,14 +3,47 @@ import { api } from '../../../services/api';
 
 export default function AdModal({ ad, onClose, onSaved }) {
   const isEdit = !!ad;
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState('');
+  const [loading,       setLoading]       = useState(false);
+  const [error,         setError]         = useState('');
+  const [showPicker,    setShowPicker]    = useState(false);
+  const [pickerFor,     setPickerFor]     = useState('link');
+  const [products,      setProducts]      = useState([]);
+  const [pickerSearch,  setPickerSearch]  = useState('');
+  const [pickerLoading, setPickerLoading] = useState(false);
 
-  // Product picker state
-  const [showPicker,   setShowPicker]   = useState(false);
-  const [products,     setProducts]     = useState([]);
-  const [pickerSearch, setPickerSearch] = useState('');
-  const [pickerLoading,setPickerLoading]= useState(false);
+  // selectedLink: { label: 'Floral Maxi Dress', value: '/product/5' }
+  // ya          : { label: 'Home Page', value: '/home' }
+  const [selectedLink, setSelectedLink] = useState(null);
+
+  // Edit mode mein link_url se label resolve karo
+  useEffect(() => {
+    if (!ad?.link_url) return;
+    if (ad.link_url.startsWith('/product/')) {
+      // Product name fetch karo
+      api.getSellerProducts().then(data => {
+        const id = parseInt(ad.link_url.replace('/product/', ''));
+        const found = (data.products || []).find(p => p.id === id);
+        setSelectedLink({
+          label: found ? found.name : ad.link_url,
+          value: ad.link_url,
+        });
+      }).catch(() => {
+        setSelectedLink({ label: ad.link_url, value: ad.link_url });
+      });
+    } else {
+      const pageMap = {
+        '/home':           'Home Page',
+        '/home?cat=women': 'Women Category',
+        '/home?cat=men':   'Men Category',
+        '/home?cat=kids':  'Kids Category',
+        '/home?cat=sale':  'Sale',
+      };
+      setSelectedLink({
+        label: pageMap[ad.link_url] || ad.link_url,
+        value: ad.link_url,
+      });
+    }
+  }, []);
 
   const [form, setForm] = useState({
     title:       ad?.title       || '',
@@ -31,8 +64,8 @@ export default function AdModal({ ad, onClose, onSaved }) {
     setForm(f => ({ ...f, [name]: type === 'checkbox' ? checked : value }));
   };
 
-  // Load products for picker
-  const openPicker = async () => {
+  const openPicker = async (forWhat) => {
+    setPickerFor(forWhat);
     setShowPicker(true);
     setPickerLoading(true);
     try {
@@ -42,31 +75,40 @@ export default function AdModal({ ad, onClose, onSaved }) {
     finally { setPickerLoading(false); }
   };
 
-  // Product selected → fill link_url
-  const selectProduct = (product) => {
+  // Product selected for LINK — save name as label, /product/id as value
+  const selectProductLink = (product) => {
     setForm(f => ({ ...f, link_url: `/product/${product.id}` }));
-    setShowPicker(false);
-    setPickerSearch('');
+    setSelectedLink({ label: product.name, value: `/product/${product.id}` });
+    setShowPicker(false); setPickerSearch('');
   };
 
-  // Category selected
-  const selectCategory = (slug) => {
-    setForm(f => ({ ...f, link_url: `/home?cat=${slug}` }));
-    setShowPicker(false);
-    setPickerSearch('');
+  // Product selected for IMAGE
+  const selectProductImage = (product) => {
+    const img = getImgUrl(product.images?.[0]);
+    if (img) setForm(f => ({ ...f, image_url: img }));
+    setShowPicker(false); setPickerSearch('');
   };
 
-  const submit = async (e) => {
-    e.preventDefault();
-    setError(''); setLoading(true);
-    try {
-      isEdit ? await api.updateAd(ad.id, form) : await api.createAd(form);
-      onSaved();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+  // Quick page selected
+  const selectQuickLink = (label, link) => {
+    setForm(f => ({ ...f, link_url: link }));
+    setSelectedLink({ label, value: link });
+    setShowPicker(false); setPickerSearch('');
+  };
+
+  // Device se file choose
+  const handleImageFile = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setForm(f => ({ ...f, image_url: ev.target.result }));
+    reader.readAsDataURL(file);
+  };
+
+  const getImgUrl = (img) => {
+    if (!img) return null;
+    if (img.startsWith('http') || img.startsWith('data:')) return img;
+    return `http://localhost:5000${img}`;
   };
 
   const filteredProducts = products.filter(p =>
@@ -74,10 +116,14 @@ export default function AdModal({ ad, onClose, onSaved }) {
     p.category_name?.toLowerCase().includes(pickerSearch.toLowerCase())
   );
 
-  const getImgUrl = (img) => {
-    if (!img) return null;
-    if (img.startsWith('http')) return img;
-    return `http://localhost:5000${img}`;
+  const submit = async (e) => {
+    e.preventDefault();
+    setError(''); setLoading(true);
+    try {
+      isEdit ? await api.updateAd(ad.id, form) : await api.createAd(form);
+      onSaved();
+    } catch (err) { setError(err.message); }
+    finally { setLoading(false); }
   };
 
   return (
@@ -87,6 +133,7 @@ export default function AdModal({ ad, onClose, onSaved }) {
           <h2>{isEdit ? '✏️ Edit Ad' : '➕ Create New Ad'}</h2>
           <button className="adm-modal-close" onClick={onClose}>✕</button>
         </div>
+
         <form className="adm-pform" onSubmit={submit}>
           <div className="adm-pform-grid">
 
@@ -102,58 +149,79 @@ export default function AdModal({ ad, onClose, onSaved }) {
                 rows={2} placeholder="Short description shown in the ad" />
             </div>
 
+            {/* ── Image Field ── */}
             <div className="apf apf-full">
-              <label>Image URL <small>(optional)</small></label>
-              <input name="image_url" value={form.image_url} onChange={handle}
-                placeholder="https://example.com/ad-image.jpg" />
+              <label>Image <small>(device se upload karo ya product image lo)</small></label>
+              <div className="adm-link-picker-row">
+                <input name="image_url" value={form.image_url} onChange={handle}
+                  placeholder="https://example.com/image.jpg"
+                  className="adm-link-picker-input" />
+                {/* 📷 Device se photo */}
+                <label className="adm-link-camera-btn" title="Device se photo choose karo">
+                  📷
+                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageFile} />
+                </label>
+                {/* 📦 Product image */}
+                <button type="button" className="adm-link-camera-btn adm-link-prod-btn"
+                  onClick={() => openPicker('image')} title="Product ki image use karo">
+                  📦
+                </button>
+                {form.image_url && (
+                  <button type="button" className="adm-link-clear-btn"
+                    onClick={() => setForm(f => ({ ...f, image_url: '' }))}>✕</button>
+                )}
+              </div>
               {form.image_url && (
                 <img src={form.image_url} alt="preview"
-                  style={{ marginTop: 8, height: 80, objectFit: 'cover', borderRadius: 8 }}
+                  style={{ marginTop: 8, height: 80, objectFit: 'cover', borderRadius: 8, maxWidth: 200 }}
                   onError={e => e.target.style.display='none'} />
               )}
             </div>
 
-            {/* ── Click Link — Camera Picker ── */}
+            {/* ── Click Link Field — sirf name dikhao ── */}
             <div className="apf apf-full">
               <label>Click Link <small>(product ya page select karo)</small></label>
-              <div className="adm-link-picker-row">
-                <input
-                  name="link_url"
-                  value={form.link_url}
-                  onChange={handle}
-                  placeholder="/home?cat=women  ya  /product/5"
-                  className="adm-link-picker-input"
-                />
-                <button
-                  type="button"
-                  className="adm-link-camera-btn"
-                  onClick={openPicker}
-                  title="Product ya page select karo"
-                >
-                  📷
-                </button>
-                {form.link_url && (
+
+              {/* Agar kuch selected hai to chip dikhao, warna button */}
+              {selectedLink ? (
+                <div className="adm-selected-link-chip">
+                  <span className="adm-selected-link-chip__icon">
+                    {selectedLink.value.startsWith('/product/') ? '📦' : '🔗'}
+                  </span>
+                  <span className="adm-selected-link-chip__name">{selectedLink.label}</span>
                   <button
                     type="button"
-                    className="adm-link-clear-btn"
-                    onClick={() => setForm(f => ({ ...f, link_url: '' }))}
-                    title="Clear link"
+                    className="adm-selected-link-chip__change"
+                    onClick={() => openPicker('link')}
+                  >
+                    Change
+                  </button>
+                  <button
+                    type="button"
+                    className="adm-selected-link-chip__remove"
+                    onClick={() => {
+                      setSelectedLink(null);
+                      setForm(f => ({ ...f, link_url: '' }));
+                    }}
                   >✕</button>
-                )}
-              </div>
-              {form.link_url && (
-                <div className="adm-link-preview-tag">
-                  🔗 {form.link_url}
                 </div>
+              ) : (
+                <button
+                  type="button"
+                  className="adm-link-select-btn"
+                  onClick={() => openPicker('link')}
+                >
+                  📷 &nbsp; Product ya Page Select Karo
+                </button>
               )}
             </div>
 
             <div className="apf">
               <label>Ad Type</label>
               <select name="type" value={form.type} onChange={handle}>
-                <option value="banner">🖼️ Banner (Top/Bottom strip)</option>
-                <option value="text">📝 Text (Thin announcement bar)</option>
-                <option value="popup">🎯 Popup (Shows on page load)</option>
+                <option value="banner">🖼️ Banner</option>
+                <option value="text">📝 Text</option>
+                <option value="popup">🎯 Popup</option>
               </select>
             </div>
 
@@ -191,7 +259,6 @@ export default function AdModal({ ad, onClose, onSaved }) {
               <label>Start Date <small>(optional)</small></label>
               <input type="date" name="start_date" value={form.start_date} onChange={handle} />
             </div>
-
             <div className="apf">
               <label>End Date <small>(optional)</small></label>
               <input type="date" name="end_date" value={form.end_date} onChange={handle} />
@@ -204,7 +271,6 @@ export default function AdModal({ ad, onClose, onSaved }) {
               </label>
             </div>
 
-            {/* Live Preview */}
             <div className="apf apf-full">
               <label>Live Preview</label>
               <div className="adm-ad-live-preview"
@@ -218,11 +284,10 @@ export default function AdModal({ ad, onClose, onSaved }) {
                   {form.title && <strong style={{ display: 'block', fontSize: 14 }}>{form.title}</strong>}
                   {form.description && <span style={{ fontSize: 12, opacity: 0.9 }}>{form.description}</span>}
                 </div>
-                {form.link_url && (
+                {selectedLink && (
                   <span style={{
-                    marginLeft: 'auto', padding: '4px 12px',
-                    background: '#fff', borderRadius: 999,
-                    fontSize: 12, fontWeight: 700,
+                    marginLeft: 'auto', padding: '4px 12px', background: '#fff',
+                    borderRadius: 999, fontSize: 12, fontWeight: 700,
                     color: form.bg_color, whiteSpace: 'nowrap',
                   }}>Shop Now →</span>
                 )}
@@ -240,73 +305,65 @@ export default function AdModal({ ad, onClose, onSaved }) {
         </form>
       </div>
 
-      {/* ── Product Picker Modal ── */}
+      {/* ── Picker Modal ── */}
       {showPicker && (
         <div className="adm-picker-overlay" onClick={() => setShowPicker(false)}>
           <div className="adm-picker-modal" onClick={e => e.stopPropagation()}>
             <div className="adm-picker-header">
-              <h3>🔗 Select Link Target</h3>
+              <h3>{pickerFor === 'image' ? '📷 Product Image Select Karo' : '🔗 Link Select Karo'}</h3>
               <button className="adm-modal-close" onClick={() => setShowPicker(false)}>✕</button>
             </div>
 
-            {/* Quick links */}
-            <div className="adm-picker-quick">
-              <p className="adm-picker-section-label">📄 Quick Pages</p>
-              {[
-                { label: '🏠 Home Page',       link: '/home' },
-                { label: '👗 Women Category',  link: '/home?cat=women' },
-                { label: '👔 Men Category',    link: '/home?cat=men' },
-                { label: '👶 Kids Category',   link: '/home?cat=kids' },
-                { label: '🛍️ Sale Category',  link: '/home?cat=sale' },
-              ].map(item => (
-                <button
-                  key={item.link}
-                  type="button"
-                  className="adm-picker-quick-btn"
-                  onClick={() => selectCategory(item.link.replace('/home?cat=', ''))}
-                >
-                  {item.label}
-                  <span className="adm-picker-quick-link">{item.link}</span>
-                </button>
-              ))}
-            </div>
+            {pickerFor === 'link' && (
+              <div className="adm-picker-quick">
+                <p className="adm-picker-section-label">📄 Quick Pages</p>
+                {[
+                  { label: 'Home Page',      link: '/home' },
+                  { label: 'Women Category', link: '/home?cat=women' },
+                  { label: 'Men Category',   link: '/home?cat=men' },
+                  { label: 'Kids Category',  link: '/home?cat=kids' },
+                  { label: 'Sale',           link: '/home?cat=sale' },
+                ].map(item => (
+                  <button key={item.link} type="button"
+                    className="adm-picker-quick-btn"
+                    onClick={() => selectQuickLink(item.label, item.link)}>
+                    {item.label}
+                    <span className="adm-picker-quick-link">{item.link}</span>
+                  </button>
+                ))}
+              </div>
+            )}
 
-            {/* Products */}
             <div className="adm-picker-products">
               <p className="adm-picker-section-label">📦 Products</p>
-              <input
-                type="text"
-                className="adm-picker-search"
+              <input type="text" className="adm-picker-search"
                 placeholder="🔍 Search product..."
                 value={pickerSearch}
                 onChange={e => setPickerSearch(e.target.value)}
-                autoFocus
-              />
+                autoFocus />
               <div className="adm-picker-list">
                 {pickerLoading ? (
-                  <div className="adm-picker-loading">Loading products...</div>
+                  <div className="adm-picker-loading">Loading...</div>
                 ) : filteredProducts.length === 0 ? (
                   <div className="adm-picker-empty">No products found</div>
                 ) : (
                   filteredProducts.map(p => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      className="adm-picker-item"
-                      onClick={() => selectProduct(p)}
-                    >
+                    <button key={p.id} type="button" className="adm-picker-item"
+                      onClick={() => pickerFor === 'image' ? selectProductImage(p) : selectProductLink(p)}>
                       {p.images?.[0] && (
-                        <img
-                          src={getImgUrl(p.images[0])}
-                          alt={p.name}
-                          onError={e => e.target.style.display='none'}
-                        />
+                        <img src={getImgUrl(p.images[0])} alt={p.name}
+                          onError={e => e.target.style.display='none'} />
                       )}
                       <div className="adm-picker-item-info">
                         <strong>{p.name}</strong>
                         <span>{p.category_name} · ₹{Number(p.price).toLocaleString()}</span>
                       </div>
-                      <span className="adm-picker-item-link">/product/{p.id}</span>
+                      <span className="adm-picker-item-link"
+                        style={ pickerFor === 'image'
+                          ? { background: '#E6FBF4', color: '#0A7D56' }
+                          : {}}>
+                        {pickerFor === 'image' ? 'Use Image' : 'Select'}
+                      </span>
                     </button>
                   ))
                 )}

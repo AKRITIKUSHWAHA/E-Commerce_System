@@ -1,10 +1,34 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../../../services/api';
 import BannerModal from '../modals/BannerModal';
 
-export default function TabBanners({ banners, setBanners, flash, showBannerModal, setShowBannerModal, editBanner, setEditBanner }) {
+// /product/5 → product ka naam return karo
+function resolveLinkLabel(link, products) {
+  if (!link) return '—';
+  if (link.startsWith('/product/')) {
+    const id = parseInt(link.replace('/product/', ''));
+    const found = products.find(p => p.id === id);
+    return found ? found.name : link;
+  }
+  const pageMap = {
+    '/home':             '🏠 Home Page',
+    '/home?cat=women':   '👗 Women Category',
+    '/home?cat=men':     '👔 Men Category',
+    '/home?cat=kids':    '👶 Kids Category',
+    '/home?cat=sale':    '🛍️ Sale',
+  };
+  return pageMap[link] || link;
+}
 
-  // Banner image click → open cta_link
+export default function TabBanners({ banners, setBanners, flash, showBannerModal, setShowBannerModal, editBanner, setEditBanner }) {
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    api.getSellerProducts()
+      .then(data => setProducts(data.products || []))
+      .catch(() => {});
+  }, []);
+
   const handleImageClick = (banner) => {
     if (!banner.cta_link) return;
     if (banner.cta_link.startsWith('http')) {
@@ -37,42 +61,31 @@ export default function TabBanners({ banners, setBanners, flash, showBannerModal
             <div key={b.id} className={`adm-banner-card ${b.is_active ? '' : 'inactive'}`}>
 
               <div className="adm-banner-preview" style={{ background: b.bg_gradient }}>
-
-                {/* Text side */}
+                {/* Text */}
                 <div className="adm-banner-preview__text">
                   <strong>{b.title}</strong>
                   <span>{b.subtitle}</span>
                   <div className="adm-banner-cta">{b.cta_text} →</div>
                 </div>
 
-                {/* ── Image with camera icon ── */}
+                {/* Image with camera overlay */}
                 {b.image_url ? (
-                  <div
-                    className="adm-banner-img-wrap"
+                  <div className="adm-banner-img-wrap"
                     onClick={() => handleImageClick(b)}
-                    title={b.cta_link ? `Go to: ${b.cta_link}` : 'No link set'}
-                  >
-                    <img
-                      src={b.image_url}
-                      alt={b.title}
-                      onError={e => e.target.parentElement.style.display = 'none'}
-                    />
-                    {/* Camera + redirect overlay */}
+                    title={b.cta_link ? resolveLinkLabel(b.cta_link, products) : 'No link'}>
+                    <img src={b.image_url} alt={b.title}
+                      onError={e => e.target.parentElement.style.display='none'} />
                     <div className="adm-banner-img-overlay">
                       <span className="adm-banner-img-camera">📷</span>
-                      {b.cta_link
-                        ? <span className="adm-banner-img-hint">Click to preview</span>
-                        : <span className="adm-banner-img-hint" style={{ color: '#ffcdd2' }}>No link</span>
-                      }
+                      <span className="adm-banner-img-hint">
+                        {b.cta_link ? resolveLinkLabel(b.cta_link, products) : 'No link'}
+                      </span>
                     </div>
                   </div>
                 ) : (
-                  /* No image — camera placeholder */
-                  <div
-                    className="adm-banner-img-placeholder"
+                  <div className="adm-banner-img-placeholder"
                     onClick={() => { setEditBanner(b); setShowBannerModal(true); }}
-                    title="Click to add image"
-                  >
+                    title="Click to add image">
                     <span>📷</span>
                     <small>Add Image</small>
                   </div>
@@ -83,7 +96,10 @@ export default function TabBanners({ banners, setBanners, flash, showBannerModal
 
               <div className="adm-ad-info">
                 <div className="adm-ad-meta">
-                  <span>🔗 {b.cta_link || '/home'}</span>
+                  {/* ── Link — product name dikhao ── */}
+                  <span style={{ fontWeight: 600, color: '#4527A0' }}>
+                    {b.cta_link?.startsWith('/product/') ? '📦' : '🔗'} {resolveLinkLabel(b.cta_link, products)}
+                  </span>
                   <span className={`adm-banner-status ${b.is_active ? 'on' : 'off'}`}>
                     {b.is_active ? '● Active' : '○ Inactive'}
                   </span>

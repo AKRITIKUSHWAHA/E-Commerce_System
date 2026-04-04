@@ -1162,3 +1162,106 @@
   color: var(--text-muted);
   font-size: 14px;
 }
+/* ══════════════════════════════════════════
+   LINK CHIP + SELECT BUTTON CSS
+   AdminDashboard.css ke END mein paste karo
+   (pichli wali picker CSS ke saath ya baad mein)
+   ══════════════════════════════════════════ */
+
+/* ── Select Button (jab kuch select nahi hua) ── */
+.adm-link-select-btn {
+  width: 100%;
+  padding: 11px 16px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: #FAFAFA;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.adm-link-select-btn:hover {
+  border-color: #FF3E6C;
+  background: #FFF0F3;
+  color: #FF3E6C;
+}
+
+/* ── Selected Link Chip (product/page select hone ke baad) ── */
+.adm-selected-link-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #EDE7F6;
+  border: 1.5px solid #B39DDB;
+  border-radius: var(--radius-md);
+  min-height: 44px;
+}
+
+.adm-selected-link-chip__icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.adm-selected-link-chip__name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 700;
+  color: #4527A0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adm-selected-link-chip__change {
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid #B39DDB;
+  background: #fff;
+  color: #4527A0;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.adm-selected-link-chip__change:hover {
+  background: #4527A0;
+  color: #fff;
+  border-color: #4527A0;
+}
+
+.adm-selected-link-chip__remove {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid #EF9A9A;
+  background: #FFEBEE;
+  color: #C62828;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.adm-selected-link-chip__remove:hover {
+  background: #C62828;
+  color: #fff;
+  border-color: #C62828;
+}
+
+/* ── Product button (📦) next to camera ── */
+.adm-link-prod-btn {
+  font-size: 16px !important;
+}

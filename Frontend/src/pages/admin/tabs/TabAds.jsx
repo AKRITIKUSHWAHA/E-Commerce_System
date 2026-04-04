@@ -1,8 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../../../services/api';
 import AdModal from '../modals/AdModal';
 
+// /product/5 → product ka naam return karo
+function resolveLinkLabel(link_url, products) {
+  if (!link_url) return '—';
+  if (link_url.startsWith('/product/')) {
+    const id = parseInt(link_url.replace('/product/', ''));
+    const found = products.find(p => p.id === id);
+    return found ? found.name : link_url;
+  }
+  // Page links ke liye friendly name
+  const pageMap = {
+    '/home':             '🏠 Home Page',
+    '/home?cat=women':   '👗 Women Category',
+    '/home?cat=men':     '👔 Men Category',
+    '/home?cat=kids':    '👶 Kids Category',
+    '/home?cat=sale':    '🛍️ Sale',
+  };
+  return pageMap[link_url] || link_url;
+}
+
 export default function TabAds({ ads, setAds, flash, showAdModal, setShowAdModal, editAd, setEditAd }) {
+  const [products, setProducts] = useState([]);
+
+  // Products fetch karo taaki link_url se name resolve ho sake
+  useEffect(() => {
+    api.getSellerProducts()
+      .then(data => setProducts(data.products || []))
+      .catch(() => {});
+  }, []);
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -11,7 +38,6 @@ export default function TabAds({ ads, setAds, flash, showAdModal, setShowAdModal
     });
   };
 
-  // Image click → open link in new tab (ya same tab)
   const handleImageClick = (ad) => {
     if (!ad.link_url) return;
     if (ad.link_url.startsWith('http')) {
@@ -41,34 +67,24 @@ export default function TabAds({ ads, setAds, flash, showAdModal, setShowAdModal
               <div className="adm-ad-preview"
                 style={{ background: ad.bg_color || '#FF3E6C', color: ad.text_color || '#fff' }}>
 
-                {/* ── Image with camera icon ── */}
+                {/* Image with camera overlay */}
                 {ad.image_url ? (
-                  <div
-                    className="adm-ad-img-wrap"
+                  <div className="adm-ad-img-wrap"
                     onClick={() => handleImageClick(ad)}
-                    title={ad.link_url ? `Go to: ${ad.link_url}` : 'No link set'}
-                  >
-                    <img
-                      src={ad.image_url}
-                      alt={ad.title}
-                      onError={e => e.target.parentElement.style.display = 'none'}
-                    />
-                    {/* Camera icon overlay */}
+                    title={ad.link_url ? resolveLinkLabel(ad.link_url, products) : 'No link'}>
+                    <img src={ad.image_url} alt={ad.title}
+                      onError={e => e.target.parentElement.style.display='none'} />
                     <div className="adm-ad-img-overlay">
                       <span className="adm-ad-img-camera">📷</span>
-                      {ad.link_url
-                        ? <span className="adm-ad-img-hint">Click to open link</span>
-                        : <span className="adm-ad-img-hint" style={{ color: '#ffcdd2' }}>No link set</span>
-                      }
+                      <span className="adm-ad-img-hint">
+                        {ad.link_url ? resolveLinkLabel(ad.link_url, products) : 'No link'}
+                      </span>
                     </div>
                   </div>
                 ) : (
-                  /* No image — show camera placeholder to prompt adding one */
-                  <div
-                    className="adm-ad-img-placeholder"
+                  <div className="adm-ad-img-placeholder"
                     onClick={() => { setEditAd(ad); setShowAdModal(true); }}
-                    title="Click to add image"
-                  >
+                    title="Click to add image">
                     <span>📷</span>
                     <small>Add Image</small>
                   </div>
@@ -77,9 +93,6 @@ export default function TabAds({ ads, setAds, flash, showAdModal, setShowAdModal
                 <div className="adm-ad-preview__text">
                   <strong>{ad.title || 'No Title'}</strong>
                   <span>{ad.description || ''}</span>
-                  {ad.link_url && (
-                    <span className="adm-ad-link-tag">🔗 {ad.link_url}</span>
-                  )}
                 </div>
                 <span className="adm-ad-type-badge">{ad.type}</span>
               </div>
@@ -89,6 +102,12 @@ export default function TabAds({ ads, setAds, flash, showAdModal, setShowAdModal
                   <span className="adm-ad-pos">📍 {ad.position}</span>
                   {ad.start_date && <span>From: {formatDate(ad.start_date)}</span>}
                   {ad.end_date   && <span>To: {formatDate(ad.end_date)}</span>}
+                  {/* ── Link — product name dikhao ── */}
+                  {ad.link_url && (
+                    <span style={{ fontWeight: 600, color: '#4527A0' }}>
+                      {ad.link_url.startsWith('/product/') ? '📦' : '🔗'} {resolveLinkLabel(ad.link_url, products)}
+                    </span>
+                  )}
                   <span style={{ fontWeight: 600, color: ad.is_active ? '#0A7D56' : '#C62828' }}>
                     {ad.is_active ? '● Active' : '○ Inactive'}
                   </span>

@@ -131,7 +131,8 @@ function AppRoutes() {
         {/* ── Home ── */}
         <Route path="/"            element={<HomeWrapper />} />
         <Route path="/home"        element={<HomeWrapper />} />
-        <Route path="/product/:id" element={<WithNavFooter><ProductDetail /></WithNavFooter>} />
+        <Route path="/product/:id" element={<WithNavFooter>
+          <ProductDetail /></WithNavFooter>} />
 
         {/* ── Auth ── */}
         <Route path="/login"    element={<AuthPage />} />
