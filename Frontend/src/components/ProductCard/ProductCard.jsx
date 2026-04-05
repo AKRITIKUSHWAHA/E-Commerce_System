@@ -78,6 +78,11 @@ export default function ProductCard({ product }) {
   const activeImg    = images[imgIndex] || product.image || '';
   const rating       = parseFloat(product.rating) || 0;
 
+  // ✅ Use slug if available, fallback to id
+  const productPath = product.slug
+    ? `/product/${product.slug}`
+    : `/product/${product.id}`;
+
   const prevImg = (e) => {
     e.preventDefault(); e.stopPropagation();
     setImgIndex(i => (i - 1 + images.length) % images.length);
@@ -99,7 +104,7 @@ export default function ProductCard({ product }) {
   const handleShopNow = (e) => {
     e.preventDefault(); e.stopPropagation();
     if (!user) { navigate('/login'); return; }
-    navigate(`/product/${product.id}`);
+    navigate(productPath);
   };
 
   const handleWishlist = (e) => {
@@ -109,7 +114,8 @@ export default function ProductCard({ product }) {
   };
 
   return (
-    <Link to={`/product/${product.id}`} className="product-card">
+    // ✅ Link now uses slug-based path
+    <Link to={productPath} className="product-card">
 
       {/* ── Image section ── */}
       <div className="product-card__img-wrap">

@@ -179,7 +179,7 @@ export default function AdminDashboard() {
     { id: 'categories', icon: '🗂️', label: 'Categories'   },
     { id: 'orders',     icon: '🛒', label: 'Orders'        },
     { id: 'customers',  icon: '👥', label: 'Customers'     },
-    { id: 'messages',   icon: '💬', label: 'Messages'      },
+    { id: 'messages',   icon: '💬', label: 'Inquery Page'      },
     { id: 'ads',        icon: '📢', label: 'Ads'           },
     { id: 'banners',    icon: '🖼️', label: 'Hero Banners' },
   ];
@@ -234,7 +234,7 @@ export default function AdminDashboard() {
                 {tab === 'categories' && 'Categories Management'}
                 {tab === 'orders'     && 'All Orders'}
                 {tab === 'customers'  && 'Customers'}
-                {tab === 'messages'   && 'Contact Messages'}
+                {tab === 'messages'   && 'Customer Inquery Page'}
                 {tab === 'ads'        && 'Ads Management'}
                 {tab === 'banners'    && 'Hero Banners'}
               </h1>

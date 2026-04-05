@@ -66,8 +66,18 @@ const getProducts = asyncHandler(async (req, res) => {
     totalPages: Math.ceil(total / Number(limit)), products: rows.map(parseProduct) });
 });
 
-// GET /api/products/:id
+// GET /api/products/:slugOrId
+// ✅ UPDATED: Accepts both slug (e.g. "floral-maxi-dress-5") and numeric id
 const getProduct = asyncHandler(async (req, res) => {
+  const param = req.params.id; // route still uses :id param name in express router
+
+  // Determine if it's a numeric id or a slug string
+  const isNumeric = /^\d+$/.test(param);
+
+  const whereClause = isNumeric
+    ? 'p.id = ? AND p.is_active = 1'
+    : 'p.slug = ? AND p.is_active = 1';
+
   const [[product]] = await pool.query(`
     SELECT p.*, c.name AS category_name, c.slug AS category_slug,
       u.name AS seller_name, sp.shop_name,
@@ -78,9 +88,9 @@ const getProduct = asyncHandler(async (req, res) => {
     JOIN users u ON p.seller_id = u.id
     LEFT JOIN seller_profiles sp ON sp.user_id = u.id
     LEFT JOIN reviews r ON r.product_id = p.id
-    WHERE p.id = ? AND p.is_active = 1
+    WHERE ${whereClause}
     GROUP BY p.id
-  `, [req.params.id]);
+  `, [param]);
 
   if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
 
@@ -143,7 +153,17 @@ const createProduct = asyncHandler(async (req, res) => {
     JSON.stringify(images), JSON.stringify(toArray(tags)),
   ]);
 
-  const [[product]] = await pool.query('SELECT * FROM products WHERE id = ?', [result.insertId]);
+  // ✅ Auto-generate slug after insert using the new id
+  const newId = result.insertId;
+  const slug = name.toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim() + '-' + newId;
+
+  await pool.query('UPDATE products SET slug = ? WHERE id = ?', [slug, newId]);
+
+  const [[product]] = await pool.query('SELECT * FROM products WHERE id = ?', [newId]);
   res.status(201).json({ success: true, product: parseProduct(product) });
 });
 
@@ -159,7 +179,7 @@ const updateProduct = asyncHandler(async (req, res) => {
 
   const { name, description, brand, price, original_price, stock, category_id, sizes, colors, tags, is_active } = req.body;
 
-  // ── Stock: jo admin daale woh existing mein ADD karo ──
+  // Stock: existing mein add karo
   const stockVal = (stock !== undefined && stock !== '' && stock !== null)
     ? Number(product.stock) + Number(stock)
     : Number(product.stock);
@@ -171,20 +191,28 @@ const updateProduct = asyncHandler(async (req, res) => {
     images = Array.isArray(req.body.images) ? req.body.images : [req.body.images];
   }
 
-  // ── FIX: is_active string 'true'/'false' ko number mein convert karo ──
+  // is_active string → number
   let isActiveVal = product.is_active;
   if (is_active !== undefined && is_active !== null && is_active !== '') {
     isActiveVal = (is_active === true || is_active === 'true' || is_active === 1 || is_active === '1') ? 1 : 0;
   }
 
+  // ✅ If name changed, regenerate slug
+  const updatedName = name || product.name;
+  const newSlug = updatedName.toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim() + '-' + id;
+
   await pool.query(`
     UPDATE products SET
       name = ?, description = ?, brand = ?, price = ?,
       original_price = ?, stock = ?, category_id = ?,
-      sizes = ?, colors = ?, images = ?, tags = ?, is_active = ?
+      sizes = ?, colors = ?, images = ?, tags = ?, is_active = ?, slug = ?
     WHERE id = ?
   `, [
-    name           || product.name,
+    updatedName,
     description    ?? product.description,
     brand          ?? product.brand,
     price          || product.price,
@@ -196,6 +224,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     JSON.stringify(images),
     JSON.stringify(Array.isArray(tags)   ? tags   : tryParse(product.tags,   [])),
     isActiveVal,
+    newSlug,
     id,
   ]);
 

@@ -1,3 +1,24 @@
+CREATE DATABASE  IF NOT EXISTS `ecommerce_db` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `ecommerce_db`;
+CREATE TABLE `ads` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `image_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `link_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `type` enum('banner','popup','text') COLLATE utf8mb4_unicode_ci DEFAULT 'banner',
+  `position` enum('home_top','home_middle','home_bottom','all_pages') COLLATE utf8mb4_unicode_ci DEFAULT 'home_top',
+  `bg_color` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '#FF3E6C',
+  `text_color` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '#ffffff',
+  `is_active` tinyint DEFAULT '1',
+  `start_date` date DEFAULT NULL,
+  `end_date` date DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) 
+--
+-- Table structure for table `categories`
+--
 
 CREATE TABLE `categories` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -9,7 +30,11 @@ CREATE TABLE `categories` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   UNIQUE KEY `slug` (`slug`)
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) 
+
+--
+-- Table structure for table `contact_messages`
+--
 
 
 CREATE TABLE `contact_messages` (
@@ -23,8 +48,29 @@ CREATE TABLE `contact_messages` (
   `reply` text COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) 
+--
+-- Table structure for table `hero_banners`
+--
 
+
+CREATE TABLE `hero_banners` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `subtitle` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `cta_text` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT 'Shop Now',
+  `cta_link` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT '/home',
+  `bg_gradient` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT 'linear-gradient(135deg, #FF3E6C 0%, #FF7043 100%)',
+  `image_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sort_order` int DEFAULT '0',
+  `is_active` tinyint DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) 
+
+--
+-- Table structure for table `order_items`
+--
 
 CREATE TABLE `order_items` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -43,8 +89,11 @@ CREATE TABLE `order_items` (
   CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE,
   CONSTRAINT `order_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE,
   CONSTRAINT `order_items_ibfk_3` FOREIGN KEY (`seller_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) 
 
+--
+-- Table structure for table `orders`
+--
 
 CREATE TABLE `orders` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -63,8 +112,10 @@ CREATE TABLE `orders` (
   PRIMARY KEY (`id`),
   KEY `customer_id` (`customer_id`),
   CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
+) 
+--
+-- Table structure for table `page_views`
+--
 
 CREATE TABLE `page_views` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -73,7 +124,10 @@ CREATE TABLE `page_views` (
   `user_id` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=580 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) 
+--
+-- Table structure for table `products`
+--
 
 
 CREATE TABLE `products` (
@@ -96,13 +150,17 @@ CREATE TABLE `products` (
   `avg_rating` decimal(3,1) DEFAULT '0.0',
   `rating_count` int DEFAULT '0',
   `has_disclaimer` tinyint DEFAULT '0',
+  `slug` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_products_slug` (`slug`),
   KEY `seller_id` (`seller_id`),
   KEY `category_id` (`category_id`),
   CONSTRAINT `products_ibfk_1` FOREIGN KEY (`seller_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `products_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
+) 
+--
+-- Table structure for table `reviews`
+--
 
 CREATE TABLE `reviews` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -117,8 +175,28 @@ CREATE TABLE `reviews` (
   CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE,
   CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `reviews_chk_1` CHECK ((`rating` between 1 and 5))
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) 
+--
+-- Table structure for table `seller_profiles`
+--
 
+CREATE TABLE `seller_profiles` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `shop_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `shop_desc` text COLLATE utf8mb4_unicode_ci,
+  `phone` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `address` text COLLATE utf8mb4_unicode_ci,
+  `gst_number` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `is_verified` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_id` (`user_id`),
+  CONSTRAINT `seller_profiles_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) 
+--
+-- Table structure for table `users`
+--
 
 CREATE TABLE `users` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -131,4 +209,4 @@ CREATE TABLE `users` (
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) 
