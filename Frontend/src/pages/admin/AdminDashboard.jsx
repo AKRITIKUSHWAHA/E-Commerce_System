@@ -45,6 +45,23 @@ export const getImgUrl = (img) => {
   return `http://localhost:5000${img}`;
 };
 
+// ── Beep sound (Web Audio API, koi file nahi chahiye) ──
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.6);
+  } catch (e) {}
+}
+
 // ══════════════════════════════════════════
 //  MAIN DASHBOARD
 // ══════════════════════════════════════════
@@ -52,10 +69,8 @@ export default function AdminDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // ── Tab ──
   const [tab, setTab] = useState('overview');
 
-  // ── Data ──
   const [dashboard,   setDash]        = useState(null);
   const [products,    setProducts]    = useState([]);
   const [categories,  setCategories]  = useState([]);
@@ -67,13 +82,15 @@ export default function AdminDashboard() {
   const [ads,         setAds]         = useState([]);
   const [banners,     setBanners]     = useState([]);
 
-  // ── UI ──
   const [loading,     setLoading]     = useState(true);
   const [refreshing,  setRefreshing]  = useState(false);
   const [msg,         setMsg]         = useState('');
   const [lastRefresh, setLastRefresh] = useState(new Date());
 
-  // ── Modals ──
+  // ✅ New order notification state
+  const [newOrderCount, setNewOrderCount] = useState(0);
+  const [showOrderAlert, setShowOrderAlert] = useState(false);
+
   const [showModal,       setShowModal]       = useState(false);
   const [editProduct,     setEditProduct]     = useState(null);
   const [showAdModal,     setShowAdModal]     = useState(false);
@@ -81,9 +98,9 @@ export default function AdminDashboard() {
   const [showBannerModal, setShowBannerModal] = useState(false);
   const [editBanner,      setEditBanner]      = useState(null);
 
-  const intervalRef = useRef(null);
+  const intervalRef  = useRef(null);
+  const knownOrderIds = useRef(new Set()); // ✅ already dekhe hue order IDs
 
-  // ── Init ──────────────────────────────
   useEffect(() => {
     if (!user || user.role !== 'admin') { navigate('/admin'); return; }
     loadAll();
@@ -91,7 +108,6 @@ export default function AdminDashboard() {
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [user]);
 
-  // ── Load All ──────────────────────────
   const loadAll = async () => {
     setLoading(true);
     try {
@@ -110,7 +126,13 @@ export default function AdminDashboard() {
       setProducts(p.products          || []);
       setCategories(c.categories      || []);
       setUsers(u.users                || []);
-      setOrders(o.orders              || []);
+
+      const fetchedOrders = o.orders || [];
+      setOrders(fetchedOrders);
+
+      // ✅ Pehli baar load — sab IDs known maan lo (notification mat dikhao)
+      fetchedOrders.forEach(order => knownOrderIds.current.add(order.id));
+
       setPageViews(v);
       setMessages(m.messages          || []);
       setUnreadCount(m.unread         || 0);
@@ -124,7 +146,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // ── Silent Refresh ────────────────────
   const silentRefresh = async () => {
     try {
       const [d, p, u, o, v, m, adsData, bannersData] = await Promise.all([
@@ -140,7 +161,36 @@ export default function AdminDashboard() {
       setDash(d);
       setProducts(p.products          || []);
       setUsers(u.users                || []);
-      setOrders(o.orders              || []);
+
+      const fetchedOrders = o.orders || [];
+
+      // ✅ Naye orders detect karo
+      const newOrders = fetchedOrders.filter(
+        order => !knownOrderIds.current.has(order.id)
+      );
+
+      if (newOrders.length > 0) {
+        // Sab naye IDs known mein add karo
+        newOrders.forEach(order => knownOrderIds.current.add(order.id));
+
+        // Notification dikhao + beep bajao
+        setNewOrderCount(prev => prev + newOrders.length);
+        setShowOrderAlert(true);
+        playBeep();
+
+        // Browser notification bhi (agar permission ho)
+        if (Notification.permission === 'granted') {
+          new Notification('🛒 New Order!', {
+            body: `${newOrders.length} new order${newOrders.length > 1 ? 's' : ''} received!`,
+            icon: '/favicon.ico',
+          });
+        }
+
+        // 8 second baad alert hide karo
+        setTimeout(() => setShowOrderAlert(false), 8000);
+      }
+
+      setOrders(fetchedOrders);
       setPageViews(v);
       setMessages(m.messages          || []);
       setUnreadCount(m.unread         || 0);
@@ -152,6 +202,13 @@ export default function AdminDashboard() {
     }
   };
 
+  // ✅ Browser notification permission maango
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
+
   const handleManualRefresh = async () => {
     setRefreshing(true);
     await silentRefresh();
@@ -162,6 +219,15 @@ export default function AdminDashboard() {
   const flash = (text, isError = false) => {
     setMsg({ text, isError });
     setTimeout(() => setMsg(''), 3000);
+  };
+
+  // ✅ Orders tab pe click karne par notification clear karo
+  const handleTabChange = (tabId) => {
+    setTab(tabId);
+    if (tabId === 'orders') {
+      setNewOrderCount(0);
+      setShowOrderAlert(false);
+    }
   };
 
   if (loading) {
@@ -179,7 +245,7 @@ export default function AdminDashboard() {
     { id: 'categories', icon: '🗂️', label: 'Categories'   },
     { id: 'orders',     icon: '🛒', label: 'Orders'        },
     { id: 'customers',  icon: '👥', label: 'Customers'     },
-    { id: 'messages',   icon: '💬', label: 'Inquery Page'      },
+    { id: 'messages',   icon: '💬', label: 'Inquery Page'  },
     { id: 'ads',        icon: '📢', label: 'Ads'           },
     { id: 'banners',    icon: '🖼️', label: 'Hero Banners' },
   ];
@@ -201,9 +267,16 @@ export default function AdminDashboard() {
             {navItems.map(item => (
               <button key={item.id}
                 className={`adm-nav-btn ${tab === item.id ? 'active' : ''}`}
-                onClick={() => setTab(item.id)}>
+                onClick={() => handleTabChange(item.id)}>
                 <span className="adm-nav-icon">{item.icon}</span>
                 <span>{item.label}</span>
+
+                {/* ✅ Orders badge – naye orders count */}
+                {item.id === 'orders' && newOrderCount > 0 && (
+                  <span className="adm-nav-unread">{newOrderCount}</span>
+                )}
+
+                {/* Messages badge */}
                 {item.id === 'messages' && unreadCount > 0 && (
                   <span className="adm-nav-unread">{unreadCount}</span>
                 )}
@@ -255,6 +328,21 @@ export default function AdminDashboard() {
             </div>
           </div>
 
+          {/* ✅ New Order Alert Banner */}
+          {showOrderAlert && (
+            <div className="adm-new-order-alert" onClick={() => handleTabChange('orders')}>
+              <span className="adm-new-order-alert__icon">🛒</span>
+              <div className="adm-new-order-alert__text">
+                <strong>{newOrderCount} New Order{newOrderCount > 1 ? 's' : ''} Received!</strong>
+                <span>Click here to view orders</span>
+              </div>
+              <button
+                className="adm-new-order-alert__close"
+                onClick={e => { e.stopPropagation(); setShowOrderAlert(false); }}
+              >✕</button>
+            </div>
+          )}
+
           {/* Flash */}
           {msg && (
             <div className={`adm-flash ${msg.isError ? 'adm-flash-err' : 'adm-flash-ok'}`}>
@@ -273,7 +361,6 @@ export default function AdminDashboard() {
               onViewMessages={() => setTab('messages')}
             />
           )}
-
           {tab === 'products' && (
             <TabProducts
               products={products}
@@ -282,7 +369,6 @@ export default function AdminDashboard() {
               flash={flash}
             />
           )}
-
           {tab === 'categories' && (
             <TabCategories
               categories={categories}
@@ -290,7 +376,6 @@ export default function AdminDashboard() {
               flash={flash}
             />
           )}
-
           {tab === 'orders' && (
             <TabOrders
               orders={orders}
@@ -298,7 +383,6 @@ export default function AdminDashboard() {
               flash={flash}
             />
           )}
-
           {tab === 'customers' && (
             <TabCustomers
               users={users}
@@ -306,7 +390,6 @@ export default function AdminDashboard() {
               flash={flash}
             />
           )}
-
           {tab === 'messages' && (
             <TabMessages
               messages={messages}
@@ -316,7 +399,6 @@ export default function AdminDashboard() {
               flash={flash}
             />
           )}
-
           {tab === 'ads' && (
             <TabAds
               ads={ads}
@@ -328,7 +410,6 @@ export default function AdminDashboard() {
               setEditAd={setEditAd}
             />
           )}
-
           {tab === 'banners' && (
             <TabBanners
               banners={banners}
@@ -340,7 +421,6 @@ export default function AdminDashboard() {
               setEditBanner={setEditBanner}
             />
           )}
-
         </main>
       </div>
 

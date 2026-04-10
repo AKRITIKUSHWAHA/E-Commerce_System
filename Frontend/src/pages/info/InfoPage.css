@@ -588,4 +588,47 @@ body::after {
   font-size: 13px; color: #B37A00;
   background: #FFF6E0;
 }
+/* ══════════════════════════════════════════
+   InfoPage.css ke END mein paste karo
+   ══════════════════════════════════════════ */
+
+/* ── Inline error (alert ki jagah) ── */
+.cf-error {
+  background: #FFF0F3;
+  color: #C62828;
+  border: 1px solid #FFD6E0;
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  animation: fadeUp 0.2s ease;
+}
+
+/* ── Button spinner ── */
+.cf-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.cf-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 

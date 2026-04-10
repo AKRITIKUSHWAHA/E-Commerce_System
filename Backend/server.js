@@ -15,6 +15,16 @@ app.use(cors({
   credentials: true,
 }));
 
+app.use(cors({
+  // Ye .env se FRONTEND_URL uthayega, agar nahi mila toh localhost use karega
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000', 
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -33,11 +43,10 @@ app.get('/health', (req, res) => {
 
 // 4. Frontend ke static "dist" folder ko connect karo
 // Note: Render par ye '../frontend/dist' path tabhi kaam karega jab aapka folder structure sahi ho
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
-
+app.use(express.static(path.join(__dirname, '../Frontend/build')));
 // 5. Agar koi route API nahi hai, toh seedha Frontend ki index.html dikhao
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
+  res.sendFile(path.join(__dirname, '../Frontend/build/index.html'));
 });
 
 // --- NAYA CODE END ---
@@ -50,5 +59,7 @@ connectDB().then(() => {
   app.listen(PORT, () => {
     console.log(`🚀 ShopKart API running on http://localhost:${PORT}`);
     console.log(`📋 Health: http://localhost:${PORT}/health`);
+
+    
   });
 });

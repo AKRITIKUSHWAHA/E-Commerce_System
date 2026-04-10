@@ -20,36 +20,40 @@ export default function Checkout() {
     return `http://localhost:5000${img}`;
   };
 
-  // ── Items ko useState mein lock karo — cart clear hone se affect nahi hoga ──
   const [checkoutItems] = useState(() => {
     if (isCartCheckout && cartItems.length > 0) {
       return cartItems.map(i => ({
-        product_id:    i.id,
-        quantity:      i.qty,
-        size:          i.selectedSize  || null,
-        color:         i.selectedColor || null,
-        name:          i.name,
-        price:         i.price,
-        originalPrice: i.originalPrice,
-        image:         i.image,
-        brand:         i.brand,
+        product_id:     i.id,
+        quantity:       i.qty,
+        size:           i.selectedSize  || null,
+        color:          i.selectedColor || null,
+        name:           i.name,
+        price:          i.price,
+        originalPrice:  i.originalPrice,
+        image:          i.image,
+        brand:          i.brand,
+        non_returnable: i.non_returnable || false, // ✅ disclaimer flag
       }));
     }
     if (product) {
       return [{
-        product_id:    product.id,
+        product_id:     product.id,
         quantity,
-        size:          selectedSize  || null,
-        color:         selectedColor || null,
-        name:          product.name,
-        price:         product.price,
-        originalPrice: product.originalPrice,
-        image:         product.image,
-        brand:         product.brand,
+        size:           selectedSize  || null,
+        color:          selectedColor || null,
+        name:           product.name,
+        price:          product.price,
+        originalPrice:  product.originalPrice,
+        image:          product.image,
+        brand:          product.brand,
+        non_returnable: product.non_returnable || false, // ✅ disclaimer flag
       }];
     }
     return [];
   });
+
+  // ✅ Sirf tab disclaimer dikhao jab koi item non-returnable ho
+  const hasDisclaimer = checkoutItems.some(i => i.non_returnable === true);
 
   const subtotal   = checkoutItems.reduce((s, i) => s + i.price * i.quantity, 0);
   const mrpTotal   = checkoutItems.reduce((s, i) => s + i.originalPrice * i.quantity, 0);
@@ -63,29 +67,28 @@ export default function Checkout() {
   const [orderId,        setOrderId]        = useState(null);
   const [paymentId,      setPaymentId]      = useState(null);
   const [savedAddress,   setSavedAddress]   = useState('');
+  // ✅ agreedToPolicy sirf tab matter karta hai jab hasDisclaimer true ho
   const [agreedToPolicy, setAgreedToPolicy] = useState(false);
 
-
   const [form, setForm] = useState({
-    name:       user?.name  || '',
-    email:      user?.email || '',
-    phone:      '',
-    altPhone:   '',
-    address:    '',
-    landmark:   '',
-    city:       '',
-    state:      '',
-    pincode:    '',
+    name:     user?.name  || '',
+    email:    user?.email || '',
+    phone:    '',
+    altPhone: '',
+    address:  '',
+    landmark: '',
+    city:     '',
+    state:    '',
+    pincode:  '',
   });
 
-  // Refs for Razorpay handler
-  const formRef       = useRef(form);
-  const itemsRef      = useRef(checkoutItems);
-  const totalRef      = useRef(grandTotal);
-  const isCartRef     = useRef(isCartCheckout);
+  const formRef   = useRef(form);
+  const itemsRef  = useRef(checkoutItems);
+  const totalRef  = useRef(grandTotal);
+  const isCartRef = useRef(isCartCheckout);
 
-  useEffect(() => { formRef.current  = form; },       [form]);
-  useEffect(() => { totalRef.current = grandTotal; },  [grandTotal]);
+  useEffect(() => { formRef.current  = form; },      [form]);
+  useEffect(() => { totalRef.current = grandTotal; }, [grandTotal]);
 
   useEffect(() => {
     const script = document.createElement('script');
@@ -95,7 +98,6 @@ export default function Checkout() {
     return () => { try { document.body.removeChild(script); } catch(e) {} };
   }, []);
 
-  // ── Empty check — sirf tab dikhao jab step 3 nahi hai ──
   if (checkoutItems.length === 0 && step !== 3) {
     return (
       <div className="checkout-empty">
@@ -127,6 +129,11 @@ export default function Checkout() {
   };
 
   const handlePayment = async () => {
+    // ✅ Sirf tab disclaimer check karo jab product non-returnable ho
+    if (hasDisclaimer && !agreedToPolicy) {
+      setError('Please agree to the Non-Returnable Policy to proceed.');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
@@ -169,18 +176,14 @@ export default function Checkout() {
               })),
             });
 
-            // Address save karo pehle
             setSavedAddress(addr);
             setOrderId(orderData.orderId);
             setPaymentId(response.razorpay_payment_id);
             setLoading(false);
 
-            // Cart clear karo — checkoutItems already locked hain useState mein
             if (isCartRef.current) {
               cartDispatch({ type: 'CLEAR_CART' });
             }
-
-            // Step 3 pe jaao
             setStep(3);
 
           } catch (err) {
@@ -345,6 +348,15 @@ export default function Checkout() {
                       {item.size  && <span>Size: <b>{item.size}</b></span>}
                       {item.color && <span>Color: <b>{item.color}</b></span>}
                       <span>Qty: {item.quantity}</span>
+                      {/* ✅ Item-level non-returnable tag */}
+                      {item.non_returnable && (
+                        <span style={{
+                          color: '#B45309', background: '#FFFBEB',
+                          border: '1px solid #F59E0B', borderRadius: 4,
+                          fontSize: 11, fontWeight: 700,
+                          padding: '2px 6px', display: 'inline-block', marginTop: 4,
+                        }}>⚠️ Non-Returnable</span>
+                      )}
                     </div>
                     <div className="co-item-price">
                       <strong>₹{(item.price * item.quantity).toLocaleString()}</strong>
@@ -381,27 +393,40 @@ export default function Checkout() {
                 <div className="co-secure-badge">🔒 100% Secure payments powered by Razorpay</div>
               </div>
 
-{/* ── Return Policy Disclaimer ── */}
-<div className="co-disclaimer">
-  <div className="co-disclaimer__header">
-    <span>⚠️</span>
-    <strong>Return & Refund Policy</strong>
-  </div>
-  <ul className="co-disclaimer__list">
-    <li>🚫 <strong>No Return Policy:</strong> All sales are final. Products cannot be returned once delivered.</li>
-    <li>📦 <strong>Check Before Accept:</strong> Please inspect your package before accepting delivery.</li>
-    <li>❌ <strong>No Refund:</strong> Refunds are not applicable after order is delivered.</li>
-    <li>✅ <strong>Exception:</strong> Wrong or damaged item complaints accepted within 24 hours of delivery only.</li>
-    <li>📞 <strong>Support:</strong> Contact us at support@ecommerce.com for any issues.</li>
-  </ul>
-  <label className="co-disclaimer__agree">
-    <input type="checkbox" checked={agreedToPolicy} onChange={e => setAgreedToPolicy(e.target.checked)} />
-    <span>I have read and agree to the <strong>Return & Refund Policy</strong></span>
-  </label>
-</div>
+              {/* ✅ Disclaimer – SIRF non-returnable products mein */}
+              {hasDisclaimer && (
+                <div className="co-disclaimer">
+                  <div className="co-disclaimer__header">
+                    <span>⚠️</span>
+                    <strong>Non-Returnable Product Notice</strong>
+                  </div>
+                  <ul className="co-disclaimer__list">
+                    <li>🚫 <strong>No Return Policy:</strong> All sales are final. Products cannot be returned once delivered.</li>
+                    <li>📦 <strong>Check Before Accept:</strong> Please inspect your package before accepting delivery.</li>
+                    <li>❌ <strong>No Refund:</strong> Refunds are not applicable after order is delivered.</li>
+                    <li>✅ <strong>Exception:</strong> Wrong or damaged item complaints accepted within 24 hours of delivery only.</li>
+                    <li>📞 <strong>Support:</strong> Contact us at support@ecommerce.com for any issues.</li>
+                  </ul>
+                  <label className="co-disclaimer__agree">
+                    <input
+                      type="checkbox"
+                      checked={agreedToPolicy}
+                      onChange={e => setAgreedToPolicy(e.target.checked)}
+                    />
+                    <span>I have read and agree to the <strong>Non-Returnable Policy</strong></span>
+                  </label>
+                </div>
+              )}
 
-{error && <div className="co-error">⚠️ {error}</div>}
-<button className="co-btn-pay co-full-btn" onClick={handlePayment} disabled={loading || !agreedToPolicy}>                {loading ? '⏳ Processing...' : `🔒 Pay ₹${grandTotal.toLocaleString()} Securely`}
+              {error && <div className="co-error">⚠️ {error}</div>}
+
+              {/* ✅ Button disable sirf tab jab disclaimer ho aur agree na kiya ho */}
+              <button
+                className="co-btn-pay co-full-btn"
+                onClick={handlePayment}
+                disabled={loading || (hasDisclaimer && !agreedToPolicy)}
+              >
+                {loading ? '⏳ Processing...' : `🔒 Pay ₹${grandTotal.toLocaleString()} Securely`}
               </button>
               <button className="co-btn-back" onClick={() => setStep(1)}>← Edit Address</button>
             </div>

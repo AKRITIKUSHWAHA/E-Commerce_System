@@ -1,5 +1,7 @@
 const BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
+//const BASE = process.env.REACT_APP_API_URL || 'http://192.168.1.8:5000/api';
+
 async function request(method, path, body = null, isFormData = false) {
   const token = localStorage.getItem('sk_token');
 

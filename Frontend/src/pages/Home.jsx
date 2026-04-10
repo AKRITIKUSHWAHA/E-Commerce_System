@@ -2,9 +2,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import Hero         from '../components/Hero/Hero';
 import Filters      from '../components/Filters/Filters';
-import ProductCard from '../components/ProductCard/ProductCard';
+import ProductCard  from '../components/ProductCard/ProductCard';
 import { api }      from '../services/api';
-import AdsDisplay from '../components/AdsDisplay/AdsDisplay';
+import AdsDisplay   from '../components/AdsDisplay/AdsDisplay';
+import AuthPage     from './auth/AuthPage';
+import { useAuth }  from '../context/AuthContext';
 import './Home.css';
 
 const defaultFilters = {
@@ -17,7 +19,11 @@ const defaultFilters = {
 };
 
 export default function Home({ searchQuery }) {
-  const location = useLocation();
+  const location        = useLocation();
+  const { user }        = useAuth();
+
+  // ── Login modal state ──
+  const [showLogin, setShowLogin] = useState(false);
 
   const getInitialCategory = () => {
     const params = new URLSearchParams(location.search);
@@ -32,8 +38,33 @@ export default function Home({ searchQuery }) {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const cat = params.get('cat') || 'all';
-    setFilters(f => ({ ...f, category: cat }));
-  }, [location.search]);
+
+    if (cat === 'all') {
+      setFilters(f => ({ ...f, category: 'all' }));
+      return;
+    }
+
+    // ✅ Categories load hone ke baad exact ya fuzzy match karo
+    // Footer 'men' bhejta hai, DB mein 'man' ho sakta hai
+    if (categories.length > 0) {
+      const slugs = categories.map(c => c.slug);
+      // 1. Exact match
+      if (slugs.includes(cat)) {
+        setFilters(f => ({ ...f, category: cat }));
+        return;
+      }
+      // 2. Fuzzy: slug contains cat, or cat contains slug, or trailing-s strip
+      const match = slugs.find(s =>
+        s.includes(cat) ||
+        cat.includes(s) ||
+        s.replace(/s$/, '') === cat.replace(/s$/, '')
+      );
+      setFilters(f => ({ ...f, category: match || cat }));
+    } else {
+      // Categories abhi load nahi hue — as-is set karo
+      setFilters(f => ({ ...f, category: cat }));
+    }
+  }, [location.search, categories]);
 
   useEffect(() => {
     fetchAll(false);
@@ -48,7 +79,7 @@ export default function Home({ searchQuery }) {
         api.getProducts(),
         api.getCategories(),
       ]);
-      setProducts(prodData.products     || []);
+      setProducts(prodData.products    || []);
       setCategories(catData.categories || []);
     } catch (err) {
       console.error('Fetch error:', err);
@@ -77,10 +108,8 @@ export default function Home({ searchQuery }) {
       list = list.filter(p => activeSlugs.includes(p.category_slug));
     }
 
-    // Fixed: Price filters logic corrected (added list = ...)
     if (filters.priceMin !== '') list = list.filter(p => p.price >= Number(filters.priceMin));
     if (filters.priceMax !== '') list = list.filter(p => p.price <= Number(filters.priceMax));
-    
     if (filters.rating > 0)      list = list.filter(p => parseFloat(p.avg_rating) >= filters.rating);
     if (filters.inStock)          list = list.filter(p => p.stock > 0);
 
@@ -123,6 +152,7 @@ export default function Home({ searchQuery }) {
           ))}
         </div>
       </div>
+
       <AdsDisplay position="home_middle" />
 
       <div className="container home-layout">
@@ -172,6 +202,14 @@ export default function Home({ searchQuery }) {
           )}
         </div>
       </div>
+
+      {/* ✅ AuthPage modal – isModal=true hone par overlay ke andar render hoga */}
+      {showLogin && (
+        <AuthPage
+          isModal={true}
+          onClose={() => setShowLogin(false)}
+        />
+      )}
     </div>
   );
 }
@@ -184,6 +222,7 @@ function normalizeProduct(p) {
   };
   return {
     id:            p.id,
+    slug:          p.slug          || '',
     name:          p.name,
     brand:         p.brand              || '',
     price:         Number(p.price),

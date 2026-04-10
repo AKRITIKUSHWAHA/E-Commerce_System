@@ -58,7 +58,7 @@ const cartReducer = (state, action) => {
 const emptyState = { items: [], wishlist: [] };
 
 export const CartProvider = ({ children }) => {
-  const { user } = useAuth();
+  const { user, openLoginModal } = useAuth(); // ✅ openLoginModal lo
   const [state, dispatch] = useReducer(cartReducer, emptyState);
 
   // ── User change hone par uska data load karo ──
@@ -81,11 +81,25 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem(key, JSON.stringify(state));
   }, [state, user]);
 
+  // ✅ Login check ke saath dispatch wrapper
+  const secureDispatch = (action) => {
+    // Yeh actions sirf logged-in user kar sakta hai
+    const protectedActions = ['ADD_TO_CART', 'TOGGLE_WISHLIST'];
+
+    if (protectedActions.includes(action.type) && !user) {
+      openLoginModal(); // Login modal kholo
+      return;           // Action rok do
+    }
+
+    dispatch(action);
+  };
+
   const totalItems = state.items.reduce((sum, i) => sum + i.qty, 0);
   const totalPrice = state.items.reduce((sum, i) => sum + i.price * i.qty, 0);
 
   return (
-    <CartContext.Provider value={{ ...state, dispatch, totalItems, totalPrice }}>
+    // ✅ secureDispatch bhejo — baaki sab same
+    <CartContext.Provider value={{ ...state, dispatch: secureDispatch, totalItems, totalPrice }}>
       {children}
     </CartContext.Provider>
   );

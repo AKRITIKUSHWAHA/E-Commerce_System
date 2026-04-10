@@ -1,9 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 export default function ProtectedRoute({ children, roles }) {
-  const { user, loading } = useAuth();
+  const { user, loading, openLoginModal } = useAuth();
+
+  // ✅ User nahi hai toh modal open karo
+  useEffect(() => {
+    if (!loading && !user) {
+      openLoginModal();
+    }
+  }, [loading, user]);
 
   if (loading) {
     return (
@@ -21,8 +28,9 @@ export default function ProtectedRoute({ children, roles }) {
     );
   }
 
-if (!user) return <Navigate to="/login" replace />;
-if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />;
+  // ✅ /login ki jagah home pe bhejo, modal wahan se khulega
+  if (!user) return <Navigate to="/" replace />;
+  if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />;
 
-return children;
+  return children;
 }

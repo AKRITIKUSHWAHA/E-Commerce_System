@@ -36,8 +36,9 @@ const MenuIcon = () => (
 
 export default function Navbar({ onSearch }) {
   const { totalItems, wishlist } = useCart();
-  const { user, logout }        = useAuth();
-  const navigate                = useNavigate();
+  const { user, logout, openLoginModal } = useAuth(); // ✅ openLoginModal add kiya
+  const navigate = useNavigate();
+
   const [query,      setQuery]      = useState('');
   const [scrolled,   setScrolled]   = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
@@ -67,8 +68,15 @@ export default function Navbar({ onSearch }) {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/');
     setUserMenu(false);
+  };
+
+  // ✅ Login click – modal open karega, /login pe nahi jayega
+  const handleLoginClick = (e) => {
+    e.preventDefault();
+    setMobileMenu(false);
+    openLoginModal();
   };
 
   return (
@@ -136,44 +144,25 @@ export default function Navbar({ onSearch }) {
                 <span className="nav-user-arrow">▾</span>
               </button>
 
-              {/* Dropdown */}
               {userMenu && (
                 <>
-                  <div
-                    className="nav-user-backdrop"
-                    onClick={() => setUserMenu(false)}
-                  />
+                  <div className="nav-user-backdrop" onClick={() => setUserMenu(false)} />
                   <div className="nav-user-dropdown">
                     <div className="nav-dropdown-header">
                       <strong>{user.name}</strong>
                       <small>{user.email}</small>
                     </div>
-                    <Link
-                      to="/account"
-                      className="nav-dropdown-item"
-                      onClick={() => setUserMenu(false)}
-                    >
+                    <Link to="/account" className="nav-dropdown-item" onClick={() => setUserMenu(false)}>
                       👤 My Account
                     </Link>
-                    <Link
-                      to="/wishlist"
-                      className="nav-dropdown-item"
-                      onClick={() => setUserMenu(false)}
-                    >
+                    <Link to="/wishlist" className="nav-dropdown-item" onClick={() => setUserMenu(false)}>
                       ❤️ Wishlist
                     </Link>
-                    <Link
-                      to="/cart"
-                      className="nav-dropdown-item"
-                      onClick={() => setUserMenu(false)}
-                    >
+                    <Link to="/cart" className="nav-dropdown-item" onClick={() => setUserMenu(false)}>
                       🛒 Cart
                     </Link>
                     <div className="nav-dropdown-divider" />
-                    <button
-                      className="nav-dropdown-logout"
-                      onClick={handleLogout}
-                    >
+                    <button className="nav-dropdown-logout" onClick={handleLogout}>
                       ⏻ Logout
                     </button>
                   </div>
@@ -181,17 +170,15 @@ export default function Navbar({ onSearch }) {
               )}
             </div>
           ) : (
-            <Link to="/login" className="nav-btn">
+            /* ✅ Login button – ab modal open karega */
+            <button className="nav-btn nav-login-btn" onClick={handleLoginClick}>
               <span className="nav-label">Login</span>
-            </Link>
+            </button>
           )}
         </div>
 
         {/* Hamburger */}
-        <button
-          className="navbar__hamburger"
-          onClick={() => setMobileMenu(!mobileMenu)}
-        >
+        <button className="navbar__hamburger" onClick={() => setMobileMenu(!mobileMenu)}>
           <MenuIcon />
         </button>
       </div>
@@ -219,15 +206,12 @@ export default function Navbar({ onSearch }) {
             </Link>
             {user ? (
               <>
-                <Link to="/account" onClick={() => setMobileMenu(false)}>
-                  👤 My Account
-                </Link>
+                <Link to="/account" onClick={() => setMobileMenu(false)}>👤 My Account</Link>
                 <button onClick={handleLogout}>⏻ Logout</button>
               </>
             ) : (
-              <Link to="/login" onClick={() => setMobileMenu(false)}>
-                👤 Login
-              </Link>
+              /* ✅ Mobile login bhi modal se */
+              <button onClick={handleLoginClick}>👤 Login</button>
             )}
           </div>
         </div>

@@ -46,7 +46,7 @@ export default function ProductDetail() {
   const { id }     = useParams();
   const navigate   = useNavigate();
   const { dispatch, wishlist } = useCart();
-  const { user }   = useAuth();
+  const { user, openLoginModal } = useAuth(); // ✅ openLoginModal add kiya
 
   const [product,       setProduct]       = useState(null);
   const [related,       setRelated]       = useState([]);
@@ -59,7 +59,6 @@ export default function ProductDetail() {
   const [sizeError,     setSizeError]     = useState('');
   const [quantity,      setQuantity]      = useState(1);
 
-  // Review states
   const [myRating,   setMyRating]   = useState(0);
   const [hoverStar,  setHoverStar]  = useState(0);
   const [myComment,  setMyComment]  = useState('');
@@ -82,7 +81,6 @@ export default function ProductDetail() {
       const p = normalizeProduct(data.product);
       setProduct(p);
 
-      // Reviews fetch karo
       try {
         const revData = await api.getReviews(id);
         setReviews(revData.reviews || []);
@@ -103,14 +101,8 @@ export default function ProductDetail() {
   };
 
   const handleSubmitReview = async () => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    if (!myRating) {
-      setReviewErr('Please select a star rating');
-      return;
-    }
+    if (!user) { openLoginModal(); return; } // ✅ modal
+    if (!myRating) { setReviewErr('Please select a star rating'); return; }
     setSubmitting(true);
     setReviewErr('');
     setReviewMsg('');
@@ -119,7 +111,6 @@ export default function ProductDetail() {
       setReviewMsg('Review submitted successfully!');
       setMyRating(0);
       setMyComment('');
-      // Refresh reviews aur product rating
       const revData = await api.getReviews(id);
       setReviews(revData.reviews || []);
       const data = await api.getProduct(id);
@@ -132,7 +123,7 @@ export default function ProductDetail() {
   };
 
   const handleAddToCart = () => {
-    if (!user) { navigate('/login'); return; }
+    if (!user) { openLoginModal(); return; } // ✅ modal
     if (product.sizes?.length > 0 && !selectedSize) {
       setSizeError('Please select your size');
       return;
@@ -151,7 +142,7 @@ export default function ProductDetail() {
   };
 
   const handleShopNow = () => {
-    if (!user) { navigate('/login'); return; }
+    if (!user) { openLoginModal(); return; } // ✅ modal
     if (product.sizes?.length > 0 && !selectedSize) {
       setSizeError('Please select your size');
       return;
@@ -266,6 +257,88 @@ export default function ProductDetail() {
               ))}
             </div>
           )}
+          {/* ── Reviews – image ke neeche ── */}
+          <div className="reviews-section">
+            <h2>
+              Customer Reviews
+              {reviews.length > 0 && (
+                <span className="reviews-count">({reviews.length})</span>
+              )}
+            </h2>
+
+            <div className="review-form-card">
+              <h3>Write a Review</h3>
+              {!user ? (
+                <p className="review-login-msg">
+                  <button
+                    onClick={openLoginModal}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      color: 'var(--primary)', fontWeight: 600, padding: 0,
+                      fontSize: 'inherit', textDecoration: 'underline',
+                    }}
+                  >Login</button>{' '}
+                  to write a review
+                </p>
+              ) : (
+                <>
+                  <div className="review-stars-select">
+                    {[1,2,3,4,5].map(n => (
+                      <span key={n}
+                        className={`review-star-btn ${n <= (hoverStar || myRating) ? 'filled' : ''}`}
+                        onClick={() => setMyRating(n)}
+                        onMouseEnter={() => setHoverStar(n)}
+                        onMouseLeave={() => setHoverStar(0)}
+                      >★</span>
+                    ))}
+                    <span className="review-star-label">{ratingLabel(hoverStar || myRating)}</span>
+                  </div>
+                  <textarea
+                    className="review-comment"
+                    placeholder="Share your experience with this product... (optional)"
+                    value={myComment}
+                    onChange={e => setMyComment(e.target.value)}
+                    rows={3}
+                  />
+                  {reviewErr && <div className="review-error">⚠️ {reviewErr}</div>}
+                  {reviewMsg && <div className="review-success">✅ {reviewMsg}</div>}
+                  <button className="review-submit-btn" onClick={handleSubmitReview} disabled={submitting}>
+                    {submitting ? 'Submitting...' : '⭐ Submit Review'}
+                  </button>
+                </>
+              )}
+            </div>
+
+            {reviews.length === 0 ? (
+              <div className="no-reviews"><p>No reviews yet. Be the first to review!</p></div>
+            ) : (
+              <div className="reviews-list">
+                {reviews.map(r => (
+                  <div key={r.id} className="review-card">
+                    <div className="review-card__header">
+                      <div className="review-avatar">
+                        {(r.reviewer_name || r.user_name || 'U').charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <strong>{r.reviewer_name || r.user_name || 'User'}</strong>
+                        <div className="review-stars">
+                          {[1,2,3,4,5].map(n => (
+                            <span key={n} className={n <= r.rating ? 'star filled' : 'star'}>★</span>
+                          ))}
+                        </div>
+                      </div>
+                      <span className="review-date">
+                        {new Date(r.created_at).toLocaleDateString('en-IN', {
+                          day: 'numeric', month: 'short', year: 'numeric',
+                        })}
+                      </span>
+                    </div>
+                    {r.comment && <p className="review-comment-text">{r.comment}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* ── Info column ── */}
@@ -282,7 +355,6 @@ export default function ProductDetail() {
           <p className="detail-brand">{product.brand}</p>
           <h1 className="detail-name">{product.name}</h1>
 
-          {/* Rating display */}
           <div className="detail-rating">
             <div className="stars-row">
               {[1,2,3,4,5].map(n => (
@@ -372,7 +444,7 @@ export default function ProductDetail() {
             <button
               className={`detail-wish-btn ${isWishlisted ? 'active' : ''}`}
               onClick={() => {
-                if (!user) { navigate('/login'); return; }
+                if (!user) { openLoginModal(); return; } // ✅ modal
                 dispatch({ type: 'TOGGLE_WISHLIST', payload: product.id });
               }}
             >
@@ -401,100 +473,6 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      {/* ── Reviews Section ── */}
-      <div className="reviews-section">
-        <h2>
-          Customer Reviews
-          {reviews.length > 0 && (
-            <span className="reviews-count">({reviews.length})</span>
-          )}
-        </h2>
-
-        {/* Write a Review */}
-        <div className="review-form-card">
-          <h3>Write a Review</h3>
-          {!user ? (
-            <p className="review-login-msg">
-              <Link to="/login">Login</Link> to write a review
-            </p>
-          ) : (
-            <>
-              <div className="review-stars-select">
-                {[1,2,3,4,5].map(n => (
-                  <span
-                    key={n}
-                    className={`review-star-btn ${n <= (hoverStar || myRating) ? 'filled' : ''}`}
-                    onClick={() => setMyRating(n)}
-                    onMouseEnter={() => setHoverStar(n)}
-                    onMouseLeave={() => setHoverStar(0)}
-                  >
-                    ★
-                  </span>
-                ))}
-                <span className="review-star-label">
-                  {ratingLabel(hoverStar || myRating)}
-                </span>
-              </div>
-
-              <textarea
-                className="review-comment"
-                placeholder="Share your experience with this product... (optional)"
-                value={myComment}
-                onChange={e => setMyComment(e.target.value)}
-                rows={3}
-              />
-
-              {reviewErr && <div className="review-error">⚠️ {reviewErr}</div>}
-              {reviewMsg && <div className="review-success">✅ {reviewMsg}</div>}
-
-              <button
-                className="review-submit-btn"
-                onClick={handleSubmitReview}
-                disabled={submitting}
-              >
-                {submitting ? 'Submitting...' : '⭐ Submit Review'}
-              </button>
-            </>
-          )}
-        </div>
-
-        {/* Reviews list */}
-        {reviews.length === 0 ? (
-          <div className="no-reviews">
-            <p>No reviews yet. Be the first to review!</p>
-          </div>
-        ) : (
-          <div className="reviews-list">
-            {reviews.map(r => (
-              <div key={r.id} className="review-card">
-                <div className="review-card__header">
-                  <div className="review-avatar">
-                    {(r.reviewer_name || r.user_name || 'U').charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <strong>{r.reviewer_name || r.user_name || 'User'}</strong>
-                    <div className="review-stars">
-                      {[1,2,3,4,5].map(n => (
-                        <span key={n} className={n <= r.rating ? 'star filled' : 'star'}>★</span>
-                      ))}
-                    </div>
-                  </div>
-                  <span className="review-date">
-                    {new Date(r.created_at).toLocaleDateString('en-IN', {
-                      day: 'numeric', month: 'short', year: 'numeric',
-                    })}
-                  </span>
-                </div>
-                {r.comment && (
-                  <p className="review-comment-text">{r.comment}</p>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Related products */}
       {related.length > 0 && (
         <div className="related-section">
           <h2>Similar Products</h2>

@@ -9,7 +9,7 @@
   overflow-x: auto;
   padding: 16px 0;
   scrollbar-width: none;
-   width: 100% 
+  width: 100%;
 }
 .cat-strip::-webkit-scrollbar { display: none; }
 
@@ -47,21 +47,19 @@
   display: grid;
   grid-template-columns: 240px 1fr;
   gap: 20px;
-  align-items: stretch; /* ← start ki jagah stretch — dono columns barabar height */
+  align-items: stretch;
   padding-top: 4px;
 }
 
 .home-sidebar {
   display: block;
-  align-self: stretch; /* ← sidebar poori height lega */
+  align-self: stretch;
 }
 
-/* Filters box ko poori height cover karaao */
 .home-sidebar .filters {
   position: sticky;
   top: calc(var(--navbar-height) + 16px);
   height: fit-content;
- /* min-height: 100%; ← kam se kam parent jitni height */
 }
 
 .mobile-filter { display: none; }
@@ -73,9 +71,36 @@
 }
 
 /* ── Results header ── */
-.results-header  { margin-bottom: 16px; }
+.results-header {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
 .results-count   { font-size: 14px; color: var(--text-muted); }
 .results-count strong { color: var(--text-primary); font-weight: 700; }
+
+/* ✅ Login trigger button – results header ke saath */
+.login-trigger-btn {
+  padding: 8px 20px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.login-trigger-btn:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255,62,108,0.3);
+}
 
 /* ── No results ── */
 .no-results {

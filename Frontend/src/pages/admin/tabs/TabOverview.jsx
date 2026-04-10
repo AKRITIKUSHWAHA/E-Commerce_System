@@ -48,7 +48,7 @@ export default function TabOverview({ dashboard, orders, pageViews, messages, un
         <div className="adm-card">
           <h3>📊 Most Visited Pages</h3>
           <table className="adm-table">
-            <thead><tr><th>#</th><th>Page</th><th>Views</th></tr></thead>
+            <thead><tr><th>S.No.</th><th>Page</th><th>Views</th></tr></thead>
             <tbody>
               {pageViews.topPages.map((p, i) => (
                 <tr key={i}>

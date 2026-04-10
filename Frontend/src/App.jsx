@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 
 import { AuthProvider }   from './context/AuthContext';
 import { CartProvider }   from './context/CartContext';
+import { useAuth }        from './context/AuthContext';
 import ProtectedRoute     from './components/auth/ProtectedRoute';
 
 import Navbar           from './components/Navbar/Navbar';
@@ -16,7 +17,6 @@ import AuthPage         from './pages/auth/AuthPage';
 import UserAccount      from './pages/user/UserAccount';
 import AdminDashboard   from './pages/admin/AdminDashboard';
 
-// --- TawkMessenger Import Add Kiya ---
 import TawkMessenger from './components/TawkMessenger/TawkMessenger';
 
 import AboutPage    from './pages/info/AboutPage';
@@ -27,25 +27,23 @@ import FAQPage      from './pages/info/FAQPage';
 
 import './index.css';
 
-// ── Admin Chat Receiver Component (Naya Add Kiya) ──
+// ── Admin Chat ──
 function AdminChat() {
   return (
     <div style={{ width: '100%', height: '85vh', padding: '10px' }}>
-      <iframe 
-        src="https://dashboard.tawk.to/" 
+      <iframe
+        src="https://dashboard.tawk.to/"
         style={{ width: '100%', height: '100%', border: 'none', borderRadius: '8px' }}
         title="Tawk Admin"
       />
     </div>
   );
-} 
+}
 
 // ── Page View Tracker ──
 function PageTracker() {
   const location = useLocation();
-
   useEffect(() => {
-    // Admin pages track mat karo
     if (!location.pathname.startsWith('/admin')) {
       fetch('http://localhost:5000/api/track/view', {
         method: 'POST',
@@ -53,18 +51,13 @@ function PageTracker() {
         body: JSON.stringify({ path: location.pathname }),
       }).catch(() => {});
     }
-  }, [location.pathname]); // har route change + initial load pe chalega
-
+  }, [location.pathname]);
   return null;
 }
 
 // ── Top Header ──
 function TopHeader() {
-  return (
-    <div className="top-header">
-      🛍️ Steepray E-Commerce System
-    </div>
-  );
+  return <div className="top-header">🛍️ Steepray E-Commerce System</div>;
 }
 
 // ── User pages wrapper ──
@@ -107,9 +100,7 @@ function AdminWrapper({ children }) {
   return (
     <>
       <div className="admin-header">
-        <span className="admin-header__logo">
-          🛍️ Steepray E-Commerce System
-        </span>
+        <span className="admin-header__logo">🛍️ Steepray E-Commerce System</span>
       </div>
       {children ? children : <AdminDashboard />}
     </>
@@ -118,25 +109,26 @@ function AdminWrapper({ children }) {
 
 // ── AppRoutes ──
 function AppRoutes() {
-  const location = useLocation();
+  const location    = useLocation();
   const isAdminPath = location.pathname.startsWith('/admin');
+
+  // ✅ AuthContext se modal state lo
+  const { showLoginModal, closeLoginModal } = useAuth();
 
   return (
     <>
       <PageTracker />
-      {/* Chat Icon sirf user side dikhega, admin side hide ho jayega */}
-<TawkMessenger />      
-      <Routes>
+      {!isAdminPath && <TawkMessenger />}
 
+      <Routes>
         {/* ── Home ── */}
         <Route path="/"            element={<HomeWrapper />} />
         <Route path="/home"        element={<HomeWrapper />} />
-        <Route path="/product/:id" element={<WithNavFooter>
-          <ProductDetail /></WithNavFooter>} />
+        <Route path="/product/:id" element={<WithNavFooter><ProductDetail /></WithNavFooter>} />
 
-        {/* ── Auth ── */}
-        <Route path="/login"    element={<AuthPage />} />
-        <Route path="/register" element={<AuthPage />} />
+        {/* ── Auth (sirf /admin ke liye page, login ab modal se hoga) ── */}
+        <Route path="/login"    element={<Navigate to="/" replace />} />
+        <Route path="/register" element={<Navigate to="/" replace />} />
         <Route path="/admin"    element={<AuthPage />} />
 
         {/* ── Protected ── */}
@@ -161,36 +153,32 @@ function AppRoutes() {
           </ProtectedRoute>
         } />
 
+        {/* ── Info Pages ── */}
+        <Route path="/about"    element={<WithNavFooter><AboutPage /></WithNavFooter>} />
+        <Route path="/contact"  element={<WithNavFooter><ContactPage /></WithNavFooter>} />
+        <Route path="/shipping" element={<WithNavFooter><ShippingPage /></WithNavFooter>} />
+        <Route path="/returns"  element={<WithNavFooter><ReturnsPage /></WithNavFooter>} />
+        <Route path="/faq"      element={<WithNavFooter><FAQPage /></WithNavFooter>} />
 
-      {/* ── Info Pages ── */}
-<Route path="/about"    element={<WithNavFooter><AboutPage /></WithNavFooter>} />
-<Route path="/contact"  element={<WithNavFooter><ContactPage /></WithNavFooter>} />
-<Route path="/shipping" element={<WithNavFooter><ShippingPage /></WithNavFooter>} />
-<Route path="/returns"  element={<WithNavFooter><ReturnsPage /></WithNavFooter>} />
-<Route path="/faq"      element={<WithNavFooter><FAQPage /></WithNavFooter>} />
-
-
-
-
-
-        {/* ── Admin Dashboard ── */}
+        {/* ── Admin ── */}
         <Route path="/admin/dashboard" element={
           <ProtectedRoute roles={['admin']}>
             <AdminWrapper />
           </ProtectedRoute>
         } />
-
-        {/* ── Admin Live Chat (Reply dene ke liye) ── */}
         <Route path="/admin/support" element={
           <ProtectedRoute roles={['admin']}>
             <AdminWrapper><AdminChat /></AdminWrapper>
           </ProtectedRoute>
         } />
 
-        {/* 404 */}
         <Route path="*" element={<Navigate to="/" replace />} />
-
       </Routes>
+
+      {/* ✅ Login Modal – poori app ke upar, kahin se bhi trigger ho sake */}
+      {showLoginModal && (
+        <AuthPage isModal={true} onClose={closeLoginModal} />
+      )}
     </>
   );
 }

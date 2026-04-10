@@ -38,18 +38,17 @@ function getDiscount(price, originalPrice) {
 
 function normalizeTagClass(tag) {
   const t = tag.toLowerCase().trim();
-  if (t.includes('trending'))                                return 'trending';
-  if (t.includes('new sale') || t === 'new sale')            return 'new-sale';
+  if (t.includes('trending'))                                  return 'trending';
+  if (t.includes('new sale') || t === 'new sale')              return 'new-sale';
   if (t.includes('new tranding') || t.includes('new tranding')) return 'new-trending';
-  if (t.includes('sale'))                                    return 'sale';
-  if (t.includes('bestseller') || t.includes('best seller')) return 'bestseller';
-  if (t.includes('hot'))                                     return 'hot';
-  if (t.includes('featured'))                                return 'featured';
-  if (t.includes('new'))                                     return 'new';
+  if (t.includes('sale'))                                      return 'sale';
+  if (t.includes('bestseller') || t.includes('best seller'))   return 'bestseller';
+  if (t.includes('hot'))                                       return 'hot';
+  if (t.includes('featured'))                                  return 'featured';
+  if (t.includes('new'))                                       return 'new';
   return t.replace(/\s+/g, '-');
 }
 
-// ── Star Rating Display ──
 function StarRating({ rating }) {
   const stars = [];
   for (let i = 1; i <= 5; i++) {
@@ -66,7 +65,7 @@ function StarRating({ rating }) {
 
 export default function ProductCard({ product }) {
   const { dispatch, wishlist } = useCart();
-  const { user }   = useAuth();
+  const { user, openLoginModal } = useAuth(); // ✅ openLoginModal add kiya
   const navigate   = useNavigate();
   const [added,    setAdded]    = useState(false);
   const [imgErr,   setImgErr]   = useState(false);
@@ -78,7 +77,6 @@ export default function ProductCard({ product }) {
   const activeImg    = images[imgIndex] || product.image || '';
   const rating       = parseFloat(product.rating) || 0;
 
-  // ✅ Use slug if available, fallback to id
   const productPath = product.slug
     ? `/product/${product.slug}`
     : `/product/${product.id}`;
@@ -95,7 +93,7 @@ export default function ProductCard({ product }) {
   const handleAddToCart = (e) => {
     e.preventDefault(); e.stopPropagation();
     if (!product.inStock) return;
-    if (!user) { navigate('/login'); return; }
+    if (!user) { openLoginModal(); return; } // ✅ modal
     dispatch({ type: 'ADD_TO_CART', payload: product });
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
@@ -103,21 +101,19 @@ export default function ProductCard({ product }) {
 
   const handleShopNow = (e) => {
     e.preventDefault(); e.stopPropagation();
-    if (!user) { navigate('/login'); return; }
+    if (!user) { openLoginModal(); return; } // ✅ modal
     navigate(productPath);
   };
 
   const handleWishlist = (e) => {
     e.preventDefault(); e.stopPropagation();
-    if (!user) { navigate('/login'); return; }
+    if (!user) { openLoginModal(); return; } // ✅ modal
     dispatch({ type: 'TOGGLE_WISHLIST', payload: product.id });
   };
 
   return (
-    // ✅ Link now uses slug-based path
     <Link to={productPath} className="product-card">
 
-      {/* ── Image section ── */}
       <div className="product-card__img-wrap">
         {!imgErr ? (
           <img src={activeImg} alt={product.name}
@@ -126,7 +122,6 @@ export default function ProductCard({ product }) {
           <div className="product-card__img-fallback">🛍️</div>
         )}
 
-        {/* Arrows */}
         {images.length > 1 && (
           <>
             <button className="pc-arrow pc-arrow--left" onClick={prevImg}>‹</button>
@@ -141,7 +136,6 @@ export default function ProductCard({ product }) {
           </>
         )}
 
-        {/* Wishlist */}
         <button
           className={`product-card__wish ${isWishlisted ? 'active' : ''}`}
           onClick={handleWishlist}
@@ -150,22 +144,18 @@ export default function ProductCard({ product }) {
           <HeartIcon filled={isWishlisted} />
         </button>
 
-        {/* Discount badge */}
         {discount > 0 && (
           <span className="product-card__discount">{discount}% OFF</span>
         )}
 
-        {/* Out of Stock */}
         {!product.inStock && (
           <div className="product-card__oos">Out of Stock</div>
         )}
 
-        {/* Low stock */}
         {product.inStock && product.stock > 0 && product.stock <= 5 && (
           <div className="product-card__low-stock">Only {product.stock} left!</div>
         )}
 
-        {/* Tags */}
         {product.tags && product.tags.length > 0 && (
           <div className="product-card__tags">
             {product.tags.slice(0, 2).map(tag => (
@@ -177,21 +167,16 @@ export default function ProductCard({ product }) {
         )}
       </div>
 
-      {/* ── Info section ── */}
       <div className="product-card__info">
-
         <p className="product-card__brand">{product.brand}</p>
         <h3 className="product-card__name">{product.name}</h3>
 
-        {/* ── Rating ── */}
         {rating > 0 ? (
           <div className="product-card__rating">
             <StarRating rating={rating} />
             <span className="rating-num">{rating.toFixed(1)}</span>
             {product.ratingCount > 0 && (
-              <span className="rating-count">
-                ({product.ratingCount.toLocaleString()})
-              </span>
+              <span className="rating-count">({product.ratingCount.toLocaleString()})</span>
             )}
           </div>
         ) : (
@@ -201,7 +186,6 @@ export default function ProductCard({ product }) {
           </div>
         )}
 
-        {/* Price */}
         <div className="product-card__price-row">
           <span className="price-now">₹{product.price.toLocaleString()}</span>
           {product.originalPrice > product.price && (
@@ -209,18 +193,14 @@ export default function ProductCard({ product }) {
           )}
         </div>
 
-        {/* Stock info */}
         {product.inStock ? (
           <div className={`product-card__stock ${product.stock <= 5 ? 'low' : ''}`}>
-            {product.stock <= 5
-              ? `⚠️ Only ${product.stock} left!`
-              : `✓ In Stock`}
+            {product.stock <= 5 ? `⚠️ Only ${product.stock} left!` : `✓ In Stock`}
           </div>
         ) : (
           <div className="product-card__stock out">✗ Out of Stock</div>
         )}
 
-        {/* Color dots */}
         {product.colors && product.colors.length > 1 && (
           <div className="product-card__colors">
             {product.colors.slice(0, 4).map((c, i) => (
@@ -232,7 +212,6 @@ export default function ProductCard({ product }) {
           </div>
         )}
 
-        {/* Action Buttons */}
         <div className="product-card__btns">
           <button
             className={`product-card__cart-btn ${added ? 'added' : ''} ${!product.inStock ? 'disabled' : ''}`}
@@ -245,7 +224,6 @@ export default function ProductCard({ product }) {
             <ShopIcon /> Shop Now
           </button>
         </div>
-
       </div>
     </Link>
   );

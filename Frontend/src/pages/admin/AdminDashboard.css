@@ -1265,3 +1265,218 @@
 .adm-link-prod-btn {
   font-size: 16px !important;
 }
+
+
+/* ══════════════════════════════════════════
+   ORDER FILTERS FIX
+   AdminDashboard.css ke END mein paste karo
+   ══════════════════════════════════════════ */
+
+/* Filter bar – items ek line mein, wrap hone par neat rahe */
+.adm-order-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 16px 20px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+/* Row: date group + status group + result — sab ek line mein */
+.adm-order-filters__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* Har group: label upar, input neeche */
+.adm-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.adm-filter-group label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Input + Clear button ek line mein */
+.adm-filter-group__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.adm-filter-input {
+  padding: 8px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text-primary);
+  outline: none;
+  background: #fff;
+  transition: border-color 0.2s;
+  cursor: pointer;
+  height: 36px;
+}
+.adm-filter-input:focus {
+  border-color: #FF3E6C;
+  box-shadow: 0 0 0 3px rgba(255,62,108,0.08);
+}
+
+/* Select thoda bada */
+.adm-select--md {
+  padding: 8px 12px;
+  font-size: 13px;
+  height: 36px;
+  min-width: 140px;
+}
+
+.adm-filter-clear {
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid #FFCDD2;
+  background: #FFEBEE;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: #C62828;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  height: 32px;
+  display: flex;
+  align-items: center;
+}
+.adm-filter-clear:hover { background: #FFCDD2; }
+
+/* Result count + Clear All – self aligned */
+.adm-filter-result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding-bottom: 2px;
+  margin-left: auto;   /* pushes to right */
+  flex-shrink: 0;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .adm-order-filters__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .adm-filter-result {
+    margin-left: 0;
+  }
+}
+
+
+/* ══════════════════════════════════════════
+   NEW ORDER ALERT BANNER
+   AdminDashboard.css ke END mein paste karo
+   ══════════════════════════════════════════ */
+
+.adm-new-order-alert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 24px 0;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #0A7D56 0%, #0d9e6e 100%);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  animation: orderAlertIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 4px 20px rgba(10, 125, 86, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shimmer effect */
+.adm-new-order-alert::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  to { left: 200%; }
+}
+
+@keyframes orderAlertIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.adm-new-order-alert:hover {
+  background: linear-gradient(135deg, #0d9e6e 0%, #0A7D56 100%);
+  box-shadow: 0 6px 24px rgba(10, 125, 86, 0.45);
+}
+
+.adm-new-order-alert__icon {
+  font-size: 28px;
+  animation: bounce 0.6s ease infinite alternate;
+  flex-shrink: 0;
+}
+
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-4px); }
+}
+
+.adm-new-order-alert__text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.adm-new-order-alert__text strong {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  font-family: var(--font-display);
+}
+
+.adm-new-order-alert__text span {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.adm-new-order-alert__close {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.adm-new-order-alert__close:hover {
+  background: rgba(255,255,255,0.3);
+  border-color: #fff;
+}
