@@ -32,7 +32,11 @@ export default function Checkout() {
         originalPrice:  i.originalPrice,
         image:          i.image,
         brand:          i.brand,
-        non_returnable: i.non_returnable || false, // ✅ disclaimer flag
+        non_returnable: (
+          i.non_returnable === true ||
+          i.non_returnable === 1 ||
+          Number(i.has_disclaimer) === 1
+        ), // ✅ robust check
       }));
     }
     if (product) {
@@ -46,14 +50,24 @@ export default function Checkout() {
         originalPrice:  product.originalPrice,
         image:          product.image,
         brand:          product.brand,
-        non_returnable: product.non_returnable || false, // ✅ disclaimer flag
+        non_returnable: (
+          product.non_returnable === true ||
+          product.non_returnable === 1 ||
+          Number(product.has_disclaimer) === 1
+        ), // ✅ robust check
       }];
     }
     return [];
   });
 
   // ✅ Sirf tab disclaimer dikhao jab koi item non-returnable ho
-  const hasDisclaimer = checkoutItems.some(i => i.non_returnable === true);
+  // ✅ Robust check — true, 1, "1", "true" sab handle karo
+  const hasDisclaimer = checkoutItems.some(i =>
+    i.non_returnable === true ||
+    i.non_returnable === 1 ||
+    i.non_returnable === '1' ||
+    i.non_returnable === 'true'
+  );
 
   const subtotal   = checkoutItems.reduce((s, i) => s + i.price * i.quantity, 0);
   const mrpTotal   = checkoutItems.reduce((s, i) => s + i.originalPrice * i.quantity, 0);

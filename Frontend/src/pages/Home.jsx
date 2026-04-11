@@ -236,7 +236,9 @@ function normalizeProduct(p) {
     tags:          p.tags     || [],
     inStock:       p.stock > 0,
     stock:         p.stock    || 0,
-    category:      p.category_slug || '',
-    avg_rating:    parseFloat(p.avg_rating) || 0,
+    category:       p.category_slug || '',
+    avg_rating:     parseFloat(p.avg_rating) || 0,
+    non_returnable: Number(p.has_disclaimer) === 1, // ✅ DB se 0/1 aata hai
+    has_disclaimer: p.has_disclaimer, // ✅ raw value bhi
   };
 }

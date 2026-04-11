@@ -15,6 +15,8 @@ const parseProduct = (p) => ({
   colors: tryParse(p.colors, []),
   images: tryParse(p.images, []),
   tags:   tryParse(p.tags,   []),
+  // ✅ has_disclaimer frontend tak pohonchao
+  has_disclaimer: p.has_disclaimer === 1 || p.has_disclaimer === true ? 1 : 0,
 });
 
 // GET /api/products
@@ -67,13 +69,9 @@ const getProducts = asyncHandler(async (req, res) => {
 });
 
 // GET /api/products/:slugOrId
-// ✅ UPDATED: Accepts both slug (e.g. "floral-maxi-dress-5") and numeric id
 const getProduct = asyncHandler(async (req, res) => {
-  const param = req.params.id; // route still uses :id param name in express router
-
-  // Determine if it's a numeric id or a slug string
+  const param = req.params.id;
   const isNumeric = /^\d+$/.test(param);
-
   const whereClause = isNumeric
     ? 'p.id = ? AND p.is_active = 1'
     : 'p.slug = ? AND p.is_active = 1';
@@ -124,7 +122,11 @@ const getSellerProducts = asyncHandler(async (req, res) => {
 
 // POST /api/seller/products
 const createProduct = asyncHandler(async (req, res) => {
-  const { name, description, brand, price, original_price, stock, category_id, sizes, colors, tags } = req.body;
+  const {
+    name, description, brand, price, original_price,
+    stock, category_id, sizes, colors, tags,
+    has_disclaimer,  // ✅ ADD
+  } = req.body;
 
   if (!name || !price || !original_price || !category_id) {
     return res.status(400).json({ success: false, message: 'name, price, original_price, and category_id are required' });
@@ -143,17 +145,24 @@ const createProduct = asyncHandler(async (req, res) => {
     return val.split(',').map(s => s.trim()).filter(Boolean);
   };
 
+  // ✅ has_disclaimer: '1' ya 1 → 1, baaki → 0
+  const disclaimerVal = (has_disclaimer === '1' || has_disclaimer === 1 || has_disclaimer === true) ? 1 : 0;
+
   const [result] = await pool.query(`
-    INSERT INTO products (seller_id, category_id, name, description, brand, price, original_price, stock, sizes, colors, images, tags)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+    INSERT INTO products
+      (seller_id, category_id, name, description, brand, price, original_price,
+       stock, sizes, colors, images, tags, has_disclaimer)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
   `, [
     req.user.id, category_id, name, description || '', brand || '',
     price, original_price, stock || 0,
-    JSON.stringify(toArray(sizes)), JSON.stringify(toArray(colors)),
-    JSON.stringify(images), JSON.stringify(toArray(tags)),
+    JSON.stringify(toArray(sizes)),
+    JSON.stringify(toArray(colors)),
+    JSON.stringify(images),
+    JSON.stringify(toArray(tags)),
+    disclaimerVal,  // ✅
   ]);
 
-  // ✅ Auto-generate slug after insert using the new id
   const newId = result.insertId;
   const slug = name.toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '')
@@ -177,9 +186,12 @@ const updateProduct = asyncHandler(async (req, res) => {
     return res.status(403).json({ success: false, message: 'This is not your product' });
   }
 
-  const { name, description, brand, price, original_price, stock, category_id, sizes, colors, tags, is_active } = req.body;
+  const {
+    name, description, brand, price, original_price,
+    stock, category_id, sizes, colors, tags, is_active,
+    has_disclaimer,  // ✅ ADD
+  } = req.body;
 
-  // Stock: existing mein add karo
   const stockVal = (stock !== undefined && stock !== '' && stock !== null)
     ? Number(product.stock) + Number(stock)
     : Number(product.stock);
@@ -191,13 +203,17 @@ const updateProduct = asyncHandler(async (req, res) => {
     images = Array.isArray(req.body.images) ? req.body.images : [req.body.images];
   }
 
-  // is_active string → number
   let isActiveVal = product.is_active;
   if (is_active !== undefined && is_active !== null && is_active !== '') {
     isActiveVal = (is_active === true || is_active === 'true' || is_active === 1 || is_active === '1') ? 1 : 0;
   }
 
-  // ✅ If name changed, regenerate slug
+  // ✅ has_disclaimer update
+  let disclaimerVal = product.has_disclaimer; // existing value default
+  if (has_disclaimer !== undefined && has_disclaimer !== null && has_disclaimer !== '') {
+    disclaimerVal = (has_disclaimer === '1' || has_disclaimer === 1 || has_disclaimer === true) ? 1 : 0;
+  }
+
   const updatedName = name || product.name;
   const newSlug = updatedName.toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '')
@@ -209,7 +225,9 @@ const updateProduct = asyncHandler(async (req, res) => {
     UPDATE products SET
       name = ?, description = ?, brand = ?, price = ?,
       original_price = ?, stock = ?, category_id = ?,
-      sizes = ?, colors = ?, images = ?, tags = ?, is_active = ?, slug = ?
+      sizes = ?, colors = ?, images = ?, tags = ?,
+      is_active = ?, slug = ?,
+      has_disclaimer = ?
     WHERE id = ?
   `, [
     updatedName,
@@ -225,6 +243,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     JSON.stringify(Array.isArray(tags)   ? tags   : tryParse(product.tags,   [])),
     isActiveVal,
     newSlug,
+    disclaimerVal,  // ✅
     id,
   ]);
 
@@ -307,4 +326,8 @@ const toggleStock = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { getProducts, getProduct, getSellerProducts, createProduct, updateProduct, deleteProduct, getSellerAnalytics, toggleStock };
+module.exports = {
+  getProducts, getProduct, getSellerProducts,
+  createProduct, updateProduct, deleteProduct,
+  getSellerAnalytics, toggleStock,
+};

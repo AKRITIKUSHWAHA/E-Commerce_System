@@ -38,7 +38,9 @@ function normalizeProduct(p) {
     stock:         p.stock,
     category:      p.category_slug        || '',
     category_name: p.category_name        || '',
-    description:   p.description          || '',
+    description:    p.description          || '',
+    non_returnable: Number(p.has_disclaimer) === 1, // ✅ DB se 0/1 aata hai
+    has_disclaimer: p.has_disclaimer, // ✅ raw value bhi pass karo
   };
 }
 
@@ -150,7 +152,10 @@ export default function ProductDetail() {
     setSizeError('');
     navigate('/checkout', {
       state: {
-        product,
+        product: {
+          ...product,
+          has_disclaimer: product.has_disclaimer, // ✅ explicitly pass karo
+        },
         selectedSize,
         selectedColor: product.colors?.[selectedColor],
         quantity,
